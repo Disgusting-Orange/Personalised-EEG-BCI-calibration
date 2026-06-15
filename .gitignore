@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated outputs
+logs/
+results/
+
+# Large EEG data
+preprocessed_all/
+data/
+
+# VS Code
+.vscode/
