@@ -303,11 +303,15 @@ def run_ica_pipeline(
         ica, raw_hp, muscle_threshold, logger,
     )
 
+
     all_excluded = sorted(set(eog_idx + muscle_idx))
-    logger.info(
-        f"Total excluded: {len(all_excluded)} components "
-        f"(EOG: {eog_idx}, Muscle: {muscle_idx})"
-    )
+
+    logger.info("=" * 60)
+    logger.info(f"ICA REPORT | Subject={subject_id} | Run={run_id}")
+    logger.info(f"EOG components removed    : {eog_idx}")
+    logger.info(f"Muscle components removed : {muscle_idx}")
+    logger.info(f"Total components removed  : {len(all_excluded)}")
+    logger.info("=" * 60)
 
     # 3. Apply
     raw_clean = apply_ica(ica, raw_filtered, all_excluded, logger)

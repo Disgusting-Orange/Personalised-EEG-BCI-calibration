@@ -40,15 +40,15 @@ TASK_MAP = {
 }
 
 # ── Filtering ──────────────────────────────────────────────────────────────────
-BANDPASS_LOW   = 0.5    # Hz
-BANDPASS_HIGH  = 45.0   # Hz
+BANDPASS_LOW   = 1    # Hz
+BANDPASS_HIGH  = 40.0   # Hz
 NOTCH_FREQ     = 60.0   # Hz  (US powerline; change to 50 for EU/Asian datasets)
 NOTCH_WIDTH    = 2.0    # Hz  bandwidth around notch freq
 
 # ── ICA ────────────────────────────────────────────────────────────────────────
 ICA_N_COMPONENTS     = 20       # number of ICA components to decompose
-ICA_METHOD           = "fastica"
-ICA_MAX_ITER         = 800
+ICA_METHOD           = "infomax"
+ICA_MAX_ITER         = 1000
 ICA_RANDOM_STATE     = 42
 # EOG-proxy channels in this dataset (frontal channels used as EOG proxies)
 ICA_EOG_CHANNELS     = ["Fp1", "Fp2"]
@@ -64,7 +64,7 @@ BAD_CHANNEL_FLAT_STD  = 0.5e-6 # channels with std < threshold (flat line)
 EPOCH_DURATION = 2.0    # seconds (non-overlapping)
 EPOCH_TMIN     = 0.0    # epoch start relative to window start
 # Amplitude rejection threshold (peak-to-peak per epoch)
-EPOCH_REJECT   = {"eeg": 550e-6}   # 450 µV
+EPOCH_REJECT   = {"eeg": 100e-6}   #commonly accepted absolute amplitude threshold for epoch/trial rejection is ± 100 μV
 EPOCH_FLAT     = {"eeg": 1e-6}     # 1 µV  (flat-line detection)
 
 # ── Re-referencing ─────────────────────────────────────────────────────────────
@@ -85,3 +85,4 @@ SHOW_FIGURES  = False  # set True for interactive / Jupyter use
 # ── Processing ─────────────────────────────────────────────────────────────────
 N_JOBS      = -1    # parallel jobs for MNE operations (-1 = all cores)
 RANDOM_SEED = 42
+TARGET_SFREQ = 128

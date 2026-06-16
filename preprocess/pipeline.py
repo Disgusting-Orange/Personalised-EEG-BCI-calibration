@@ -15,11 +15,13 @@ Pipeline stages (per run)
 3.  Bad-channel detection (epochs.detect_bad_channels)
 4.  Bad-channel interpolation (epochs.mark_and_interpolate_bads)
 5.  Bandpass + notch filtering (filters.apply_filters)
-6.  ICA artifact removal (ica.run_ica_pipeline)
-7.  Common average re-reference (epochs.apply_reference)
-8.  Fixed-length epoching + rejection (epochs.make_fixed_length_epochs)
-9.  Visualisation (visualizer.*)
-10. Save epochs (epochs.save_epochs / save_epochs_numpy)
+6.  Bandpass + notch filtering
+7.  Downsampling to 128 Hz
+8.  ICA artifact removal
+9.  Common average re-reference
+10. Fixed-length epoching + rejection
+11. Visualisation
+12. Save epochs
 """
 
 import gc
@@ -169,6 +171,16 @@ def preprocess_run(
                 logger=log,
             )
         free_memory(raw)   # release unfiltered + uninterpolated copy
+        # ── Stage 6.5: Downsample ───────────────────────────────
+        with timer("Downsampling", log):
+            raw_filtered.resample(
+                cfg.TARGET_SFREQ,
+                npad="auto"
+            )
+        
+        log.info(
+            f"Resampled to {raw_filtered.info['sfreq']} Hz"
+        )
 
         # ── Stage 7: ICA artifact removal ────────────────────────────────────
         with timer("ICA", log):
