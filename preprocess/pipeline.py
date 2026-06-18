@@ -15,13 +15,12 @@ Pipeline stages (per run)
 3.  Bad-channel detection (epochs.detect_bad_channels)
 4.  Bad-channel interpolation (epochs.mark_and_interpolate_bads)
 5.  Bandpass + notch filtering (filters.apply_filters)
-6.  Bandpass + notch filtering
-7.  Downsampling to 128 Hz
+6.  Downsampling to 128 Hz
+7.  Common average re-reference  <--- MOVED HERE (before ICA)
 8.  ICA artifact removal
-9.  Common average re-reference
-10. Fixed-length epoching + rejection
-11. Visualisation
-12. Save epochs
+9.  Fixed-length epoching + rejection
+10. Visualisation
+11. Save epochs
 """
 
 import gc
@@ -31,7 +30,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import mne
-
+import numpy as np
 from . import config as cfg
 from .epochs import (
     apply_reference,
@@ -171,18 +170,20 @@ def preprocess_run(
                 logger=log,
             )
         free_memory(raw)   # release unfiltered + uninterpolated copy
-        # ── Stage 6.5: Downsample ───────────────────────────────
+
+        # ── Stage 6.5: Downsample ────────────────────────────────────────────
         with timer("Downsampling", log):
             raw_filtered.resample(
                 cfg.TARGET_SFREQ,
                 npad="auto"
             )
-        
-        log.info(
-            f"Resampled to {raw_filtered.info['sfreq']} Hz"
-        )
+        log.info(f"Resampled to {raw_filtered.info['sfreq']} Hz")
 
-        # ── Stage 7: ICA artifact removal ────────────────────────────────────
+        # ── Stage 7: Common average re-reference (BEFORE ICA) ──────────────
+        with timer("Re-referencing (before ICA)", log):
+            raw_filtered = apply_reference(raw_filtered, cfg.REFERENCE, log)
+
+        # ── Stage 8: ICA artifact removal ────────────────────────────────────
         with timer("ICA", log):
             raw_clean, fitted_ica, excluded_comps = run_ica_pipeline(
                 raw_filtered=raw_filtered,
@@ -203,7 +204,7 @@ def preprocess_run(
 
         log_memory(log, "after ICA")
 
-        # ── Stage 8: ICA component visualisation ─────────────────────────────
+        # ── Stage 9: ICA component visualisation ──────────────────────────────
         if cfg.SAVE_FIGURES:
             # Re-build high-passed copy for plotting (ica module already did
             # this internally but we need it here for properties plots)
@@ -220,9 +221,11 @@ def preprocess_run(
             )
             free_memory(raw_hp_for_plot)
 
-        # ── Stage 9: Common average re-reference ─────────────────────────────
-        with timer("Re-referencing", log):
-            raw_clean = apply_reference(raw_clean, cfg.REFERENCE, log)
+        # Peak amplitude logging (after ICA, already re-referenced)
+        log.info(
+            f"Peak amplitude after ICA: "
+            f"{np.max(np.abs(raw_clean.get_data()))*1e6:.2f} µV"
+        )
 
         # ── Stage 10: Epoching ────────────────────────────────────────────────
         with timer("Epoching", log):

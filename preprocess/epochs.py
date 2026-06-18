@@ -47,9 +47,21 @@ def detect_bad_channels(
     stds = data.std(axis=1)
 
     median_std = np.median(stds)
+    
+    logger.info(f"Median STD: {median_std*1e6:.2f} µV")
+    
+    top_idx = np.argsort(stds)[::-1][:10]
+    
+    logger.info("Top 10 channel STDs:")
+    for idx in top_idx:
+        logger.info(
+            f"{ch_names[idx]} : {stds[idx]*1e6:.2f} µV"
+        )
+    
     high_var_mask = stds > (std_multiplier * median_std)
     flat_mask = stds < flat_std_threshold
 
+    
     bad_high = list(ch_names[high_var_mask])
     bad_flat = list(ch_names[flat_mask])
     bads = sorted(set(bad_high + bad_flat))
@@ -211,6 +223,13 @@ def make_fixed_length_epochs(
     )
 
     if n_kept == 0:
+        drop_reasons = {}
+    
+        for drop_log in epochs.drop_log:
+            for reason in drop_log:
+                drop_reasons[reason] = drop_reasons.get(reason, 0) + 1
+    
+        logger.warning(f"Drop reasons: {drop_reasons}")
         logger.warning("All epochs rejected — check rejection thresholds.")
         return None
 

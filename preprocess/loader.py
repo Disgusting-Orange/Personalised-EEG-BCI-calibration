@@ -61,7 +61,7 @@ def _set_montage(raw: mne.io.BaseRaw, logger: logging.Logger) -> mne.io.BaseRaw:
     """Apply the standard_1020 montage; log any channels that don't match."""
     montage = mne.channels.make_standard_montage("standard_1020")
     try:
-        raw.set_montage(montage, on_missing="warn")
+        raw.set_montage(montage, on_missing="warn",match_case=False)
     except Exception as exc:
         logger.warning(f"Could not set montage: {exc}")
     return raw

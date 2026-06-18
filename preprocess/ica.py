@@ -1,319 +1,299 @@
-"""
-ica.py
-------
-ICA-based artefact removal for eye blinks and muscle noise.
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 1 RUNNER: Local PhysioNet → ICA → 8–30 Hz → Epochs → Save
+# ─────────────────────────────────────────────────────────────────────────────
 
-Strategy
---------
-1. Fit ICA on a 1 Hz high-passed copy of the bandpass-filtered signal
-   (high-pass removes slow drifts that dominate ICA decomposition).
-2. Auto-detect EOG components via correlation with frontal channels
-   (Fp1, Fp2 used as EOG proxies since the dataset has no dedicated
-   EOG channel).
-3. Auto-detect muscle (EMG) components via z-score on the high-frequency
-   power of each component's time-series.
-4. Apply the exclusion list back onto the original bandpass-filtered Raw.
-"""
+import sys
 
-import logging
-from pathlib import Path
-from typing import List, Optional, Tuple
+# -----------------------------
+# CONFIG
+# -----------------------------
 
-import mne
-import numpy as np
-from mne.preprocessing import ICA
+SUBJECTS = list(range(16, 110))   # starts from Subject 16 to 109
 
+DATA_ROOT = Path(
+    "/home/nvidia/22BLC1376/data/eegmmidb/"
+    "eeg-motor-movementimagery-dataset-1.0.0/files"
+)
 
-# ── Core ICA fitting ──────────────────────────────────────────────────────────
+BASE_SAVE_DIR = Path("saved_step1_all_subjects")
+BASE_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
-def fit_ica(
-    raw_filtered: mne.io.BaseRaw,
-    n_components: int,
-    method: str,
-    max_iter: int,
-    random_state: int,
-    hp_cutoff: float,
-    n_jobs: int,
-    logger: logging.Logger,
-) -> Tuple[ICA, mne.io.BaseRaw]:
-    """
-    Fit ICA on a high-passed copy of *raw_filtered*.
+RUNS = [3, 4, 7, 8, 11, 12]
 
-    Parameters
-    ----------
-    raw_filtered  : bandpass-filtered Raw (not mutated)
-    n_components  : number of ICA components
-    method        : "fastica" | "infomax" | "picard"
-    max_iter      : maximum ICA iterations
-    random_state  : RNG seed for reproducibility
-    hp_cutoff     : high-pass cutoff applied before fitting (Hz)
-    n_jobs        : parallel jobs
-    logger        : logger instance
+# Epoch window
+TMIN = 0.5
+TMAX = 3.5
 
-    Returns
-    -------
-    (fitted ICA object, high-passed Raw used for fitting)
-    """
-    logger.info(f"Fitting ICA ({method}, {n_components} components) …")
+# Filtering
+BANDPASS_LOW = 1.0
+BANDPASS_HIGH = 40.0
 
-    # High-pass the filtered signal before ICA fitting
-    raw_for_ica = raw_filtered.copy()
-    raw_for_ica.filter(
-        l_freq=hp_cutoff,
-        h_freq=None,
-        method="fir",
-        fir_window="hamming",
-        n_jobs=n_jobs,
-        verbose=False,
-    )
+MOTOR_BAND_LOW = 8.0
+MOTOR_BAND_HIGH = 30.0
 
-    ica = ICA(
-        n_components=n_components,
-        method=method,
-        max_iter=max_iter,
-        random_state=random_state,
-        fit_params={"extended": True} if method == "infomax" else None,
-    )
+NOTCH_FREQ = 60.0
+REFERENCE = "average"
 
-    try:
-        ica.fit(raw_for_ica, verbose=False)
-        if hasattr(ica, "pca_explained_variance_"):
-            explained = (
-                ica.pca_explained_variance_[:n_components].sum()
-                / ica.pca_explained_variance_.sum()
-            )
-            logger.info(
-                f"ICA fitted: {ica.n_components_} components, "
-                f"explained variance: {explained:.1%}"
-            )
-        else:
-            logger.info(
-                f"ICA fitted: {ica.n_components_} components"
-            )
-    except Exception as exc:
-        logger.error(f"ICA fitting failed: {exc}")
-        raise
+# ICA
+ICA_N_COMPONENTS = 20
+ICA_METHOD = "infomax"
+ICA_MAX_ITER = 1000
+ICA_RANDOM_STATE = 42
+ICA_EOG_CHANNELS = ["Fp1", "Fp2"]
+ICA_EOG_THRESHOLD = 3.0
+ICA_MUSCLE_THRESHOLD = 2.0
+ICA_HIGH_PASS_FOR_FIT = 1.0
 
-    return ica, raw_for_ica
+N_JOBS = 1
+
+# Labels
+LABEL_MAP = {
+    "rest": 0,
+    "executed_left": 1,
+    "executed_right": 2,
+    "imagined_left": 3,
+    "imagined_right": 4,
+}
+
+LABEL_NAMES = {
+    0: "Rest",
+    1: "Executed Left",
+    2: "Executed Right",
+    3: "Imagined Left",
+    4: "Imagined Right",
+}
 
 
-# ── EOG artefact detection ────────────────────────────────────────────────────
+# -----------------------------
+# LOGGER
+# -----------------------------
 
-def detect_eog_components(
-    ica: ICA,
-    raw_hp: mne.io.BaseRaw,
-    eog_channels: List[str],
-    threshold: float,
-    logger: logging.Logger,
-) -> List[int]:
-    """
-    Identify ICA components correlated with frontal (EOG-proxy) channels.
+def make_logger():
+    logger = logging.getLogger("ICA_STEP1")
+    logger.setLevel(logging.INFO)
 
-    Parameters
-    ----------
-    ica          : fitted ICA object
-    raw_hp       : high-passed Raw (same one used for ICA fitting)
-    eog_channels : list of channel names to use as EOG proxies
-    threshold    : z-score threshold for detection
-    logger       : logger
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
-    Returns
-    -------
-    List of component indices flagged as EOG artefacts.
-    """
-    eog_indices: List[int] = []
-    available = [ch for ch in eog_channels if ch in raw_hp.ch_names]
-
-    if not available:
-        logger.warning("No EOG proxy channels found — skipping EOG detection.")
-        return eog_indices
-
-    for ch in available:
-        try:
-            indices, scores = ica.find_bads_eog(
-                raw_hp,
-                ch_name=ch,
-                threshold=threshold,
-                verbose=False,
-            )
-            eog_indices.extend(indices)
-            logger.info(
-                f"EOG detection ({ch}): components {indices} "
-                f"(scores {[f'{s:.2f}' for s in scores[indices] if len(scores) > 0]})"
-            )
-        except Exception as exc:
-            logger.warning(f"EOG detection failed for {ch}: {exc}")
-
-    # Deduplicate
-    eog_indices = sorted(set(eog_indices))
-    return eog_indices
+    return logger
 
 
-# ── Muscle artefact detection ─────────────────────────────────────────────────
+logger = make_logger()
 
-def detect_muscle_components(
-    ica: ICA,
-    raw_hp: mne.io.BaseRaw,
-    threshold: float,
-    logger: logging.Logger,
-) -> List[int]:
-    """
-    Identify ICA components dominated by high-frequency (muscle) activity
-    using MNE's ``find_bads_muscle`` if available, otherwise fall back to
-    a kurtosis-based heuristic.
 
-    Parameters
-    ----------
-    ica       : fitted ICA object
-    raw_hp    : high-passed Raw
-    threshold : z-score threshold
-    logger    : logger
+# -----------------------------
+# LOCAL FILE PATHS
+# -----------------------------
 
-    Returns
-    -------
-    List of component indices flagged as muscle artefacts.
-    """
-    muscle_indices: List[int] = []
+def get_local_file_paths(subject_id: int):
+    subject_folder = DATA_ROOT / f"S{subject_id:03d}"
 
-    # Preferred: MNE ≥1.0 has find_bads_muscle
-    if hasattr(ica, "find_bads_muscle"):
-        try:
-            indices, scores = ica.find_bads_muscle(
-                raw_hp,
-                threshold=threshold,
-                verbose=False,
-            )
-            muscle_indices.extend(indices)
-            logger.info(f"Muscle detection: components {indices}")
-            return sorted(set(muscle_indices))
-        except Exception as exc:
-            logger.warning(f"find_bads_muscle failed ({exc}), using kurtosis fallback.")
+    file_paths = [
+        subject_folder / f"S{subject_id:03d}R{run:02d}.edf"
+        for run in RUNS
+    ]
 
-    # Fallback: kurtosis-based detection
-    try:
-        sources = ica.get_sources(raw_hp).get_data()  # (n_components, n_times)
-        kurtosis = _kurtosis(sources)                  # (n_components,)
-        z_kurt = (kurtosis - kurtosis.mean()) / (kurtosis.std() + 1e-10)
-        muscle_indices = list(np.where(z_kurt > threshold)[0])
-        logger.info(
-            f"Muscle detection (kurtosis fallback): components {muscle_indices}"
+    for path in file_paths:
+        if not path.exists():
+            raise FileNotFoundError(f"Missing EDF file: {path}")
+
+    return file_paths
+
+
+# -----------------------------
+# LOAD ONE SUBJECT
+# -----------------------------
+
+def load_subject_step1(subject_id: int):
+    file_paths = get_local_file_paths(subject_id)
+
+    all_epochs = []
+    all_labels = []
+
+    for run, file_path in zip(RUNS, file_paths):
+        print(f"\nProcessing Subject {subject_id}, Run {run}...")
+        print(f"Using file: {file_path}")
+
+        raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
+
+        # Standardize channel names
+        mne.datasets.eegbci.standardize(raw)
+
+        # Montage
+        montage = mne.channels.make_standard_montage("standard_1005")
+        raw.set_montage(montage, on_missing="ignore")
+
+        # Average reference
+        raw.set_eeg_reference(REFERENCE, verbose=False)
+
+        # Notch filter
+        raw.notch_filter(
+            freqs=NOTCH_FREQ,
+            verbose=False,
         )
-    except Exception as exc:
-        logger.warning(f"Kurtosis-based muscle detection failed: {exc}")
 
-    return sorted(set(muscle_indices))
+        # Broad filter before ICA: 1–40 Hz
+        raw.filter(
+            l_freq=BANDPASS_LOW,
+            h_freq=BANDPASS_HIGH,
+            fir_design="firwin",
+            verbose=False,
+        )
+
+        # ICA cleaning using your pipeline
+        raw_clean, fitted_ica, excluded_components = run_ica_pipeline(
+            raw_filtered=raw,
+            n_components=ICA_N_COMPONENTS,
+            method=ICA_METHOD,
+            max_iter=ICA_MAX_ITER,
+            random_state=ICA_RANDOM_STATE,
+            eog_channels=ICA_EOG_CHANNELS,
+            eog_threshold=ICA_EOG_THRESHOLD,
+            muscle_threshold=ICA_MUSCLE_THRESHOLD,
+            hp_cutoff=ICA_HIGH_PASS_FOR_FIT,
+            n_jobs=N_JOBS,
+            logger=logger,
+            figure_dir=None,
+            subject_id=f"S{subject_id:03d}",
+            run_id=f"R{run:02d}",
+        )
+
+        print(f"Run {run}: ICA removed components {excluded_components}")
+
+        # Final motor-band filter: 8–30 Hz
+        raw_clean.filter(
+            l_freq=MOTOR_BAND_LOW,
+            h_freq=MOTOR_BAND_HIGH,
+            fir_design="firwin",
+            verbose=False,
+        )
+
+        # Events
+        events, event_id = mne.events_from_annotations(raw_clean, verbose=False)
+
+        used_event_id = {
+            key: value
+            for key, value in event_id.items()
+            if key in ["T0", "T1", "T2"]
+        }
+
+        if len(used_event_id) == 0:
+            print(f"Run {run}: No T0/T1/T2 events found. Skipping.")
+            continue
+
+        # Epoching
+        epochs = mne.Epochs(
+            raw_clean,
+            events,
+            event_id=used_event_id,
+            tmin=TMIN,
+            tmax=TMAX,
+            baseline=None,
+            preload=True,
+            verbose=False,
+        )
+
+        X_run = epochs.get_data()
+        event_codes = epochs.events[:, -1]
+
+        inv_event_id = {v: k for k, v in used_event_id.items()}
+
+        y_run = []
+
+        for code in event_codes:
+            event_name = inv_event_id[code]
+
+            if event_name == "T0":
+                label = LABEL_MAP["rest"]
+
+            elif run in [3, 7, 11]:
+                if event_name == "T1":
+                    label = LABEL_MAP["executed_left"]
+                elif event_name == "T2":
+                    label = LABEL_MAP["executed_right"]
+                else:
+                    continue
+
+            elif run in [4, 8, 12]:
+                if event_name == "T1":
+                    label = LABEL_MAP["imagined_left"]
+                elif event_name == "T2":
+                    label = LABEL_MAP["imagined_right"]
+                else:
+                    continue
+
+            y_run.append(label)
+
+        if len(y_run) != len(X_run):
+            print(f"Warning: Run {run} X/y mismatch: {len(X_run)} vs {len(y_run)}")
+
+        all_epochs.append(X_run)
+        all_labels.extend(y_run)
+
+        print(f"Run {run} done. Epochs: {len(y_run)}")
+
+    if len(all_epochs) == 0:
+        raise ValueError(f"No valid epochs found for Subject {subject_id}")
+
+    X = np.concatenate(all_epochs, axis=0)
+    y = np.array(all_labels)
+
+    return X, y
 
 
-def _kurtosis(data: np.ndarray) -> np.ndarray:
-    """Compute excess kurtosis along axis=1 (time axis)."""
-    mu = data.mean(axis=1, keepdims=True)
-    sigma = data.std(axis=1, keepdims=True) + 1e-10
-    z = (data - mu) / sigma
-    kurt = np.mean(z ** 4, axis=1) - 3.0
-    return kurt
+# -----------------------------
+# RUN ALL SUBJECTS FROM 16
+# -----------------------------
 
+if __name__ == "__main__":
 
-# ── Application ───────────────────────────────────────────────────────────────
+    failed_subjects = []
 
-def apply_ica(
-    ica: ICA,
-    raw_filtered: mne.io.BaseRaw,
-    exclude: List[int],
-    logger: logging.Logger,
-) -> mne.io.BaseRaw:
-    """
-    Apply ICA exclusion list to *raw_filtered* and return the cleaned Raw.
+    for subject_id in SUBJECTS:
+        print("\n" + "=" * 60)
+        print(f"Starting Subject {subject_id}")
+        print("=" * 60)
 
-    Parameters
-    ----------
-    ica          : fitted ICA object
-    raw_filtered : bandpass-filtered Raw (not mutated)
-    exclude      : list of component indices to remove
-    logger       : logger
+        subject_save_dir = BASE_SAVE_DIR / f"subject_{subject_id:03d}"
+        subject_save_dir.mkdir(parents=True, exist_ok=True)
 
-    Returns
-    -------
-    Clean mne.io.BaseRaw with artefact components removed
-    """
-    if not exclude:
-        logger.info("No ICA components to exclude — returning original.")
-        return raw_filtered.copy()
+        x_path = subject_save_dir / "X_epochs_ica_cleaned_motor_8_30.npy"
+        y_path = subject_save_dir / "y_labels.npy"
 
-    ica.exclude = exclude
-    logger.info(f"Applying ICA: excluding components {exclude}")
+        if x_path.exists() and y_path.exists():
+            print(f"Subject {subject_id} already processed. Skipping.")
+            continue
 
-    raw_clean = raw_filtered.copy()
-    ica.apply(raw_clean, verbose=False)
-    return raw_clean
+        try:
+            X, y = load_subject_step1(subject_id)
 
+            print("X shape:", X.shape)
+            print("y shape:", y.shape)
 
-# ── High-level entry point ────────────────────────────────────────────────────
+            unique, counts = np.unique(y, return_counts=True)
 
-def run_ica_pipeline(
-    raw_filtered: mne.io.BaseRaw,
-    n_components: int,
-    method: str,
-    max_iter: int,
-    random_state: int,
-    eog_channels: List[str],
-    eog_threshold: float,
-    muscle_threshold: float,
-    hp_cutoff: float,
-    n_jobs: int,
-    logger: logging.Logger,
-    figure_dir: Optional[Path] = None,
-    subject_id: str = "",
-    run_id: str = "",
-) -> Tuple[mne.io.BaseRaw, ICA, List[int]]:
-    """
-    Full ICA pipeline: fit → detect artefacts → apply.
+            print("Class counts:")
+            for cls, count in zip(unique, counts):
+                print(f"{LABEL_NAMES[cls]}: {count}")
 
-    Parameters
-    ----------
-    raw_filtered      : bandpass+notch filtered Raw
-    n_components      : ICA components to fit
-    method            : ICA algorithm
-    max_iter          : max iterations
-    random_state      : RNG seed
-    eog_channels      : EOG proxy channel names
-    eog_threshold     : EOG z-score threshold
-    muscle_threshold  : muscle z-score threshold
-    hp_cutoff         : high-pass cutoff for ICA fitting
-    n_jobs            : parallel jobs
-    logger            : logger
-    figure_dir        : if given, save ICA component plots here
-    subject_id        : used in figure filenames
-    run_id            : used in figure filenames
+            np.save(x_path, X)
+            np.save(y_path, y)
 
-    Returns
-    -------
-    (raw_ica_cleaned, fitted_ica, excluded_components)
-    """
-    # 1. Fit
-    ica, raw_hp = fit_ica(
-        raw_filtered, n_components, method, max_iter,
-        random_state, hp_cutoff, n_jobs, logger,
-    )
+            print(f"Saved Subject {subject_id} to {subject_save_dir}")
 
-    # 2. Detect
-    eog_idx = detect_eog_components(
-        ica, raw_hp, eog_channels, eog_threshold, logger,
-    )
-    muscle_idx = detect_muscle_components(
-        ica, raw_hp, muscle_threshold, logger,
-    )
+        except Exception as e:
+            print(f"Subject {subject_id} failed: {e}")
+            failed_subjects.append(subject_id)
 
+    failed_path = BASE_SAVE_DIR / "failed_subjects_from_16.txt"
 
-    all_excluded = sorted(set(eog_idx + muscle_idx))
+    with open(failed_path, "w") as f:
+        for sub in failed_subjects:
+            f.write(str(sub) + "\n")
 
-    logger.info("=" * 60)
-    logger.info(f"ICA REPORT | Subject={subject_id} | Run={run_id}")
-    logger.info(f"EOG components removed    : {eog_idx}")
-    logger.info(f"Muscle components removed : {muscle_idx}")
-    logger.info(f"Total components removed  : {len(all_excluded)}")
-    logger.info("=" * 60)
-
-    # 3. Apply
-    raw_clean = apply_ica(ica, raw_filtered, all_excluded, logger)
-
-    return raw_clean, ica, all_excluded
+    print("\nAll done.")
+    print("Failed subjects:", failed_subjects)
+    print("Failed list saved to:", failed_path)
