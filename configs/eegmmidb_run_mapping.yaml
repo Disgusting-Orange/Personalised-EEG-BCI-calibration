@@ -1,0 +1,72 @@
+dataset:
+  source: PhysioNet EEG Motor Movement/Imagery Dataset v1.0.0
+  notes:
+    - Official documentation states that R01 and R02 are baseline recordings.
+    - The official documentation states that the remaining 12 runs are three repetitions of four task conditions involving movement or imagery.
+    - The meaning of T1 and T2 depends on run context; they are not universal across all runs.
+
+run_mapping:
+  R01:
+    role: baseline
+    condition: eyes_open
+    official_meaning: Baseline recording with eyes open.
+  R02:
+    role: baseline
+    condition: eyes_closed
+    official_meaning: Baseline recording with eyes closed.
+  R03:
+    role: task_run
+    repetition: 1
+    official_meaning: First task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R04:
+    role: task_run
+    repetition: 1
+    official_meaning: Second task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R05:
+    role: task_run
+    repetition: 2
+    official_meaning: Third task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R06:
+    role: task_run
+    repetition: 2
+    official_meaning: Fourth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R07:
+    role: task_run
+    repetition: 3
+    official_meaning: Fifth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R08:
+    role: task_run
+    repetition: 3
+    official_meaning: Sixth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R09:
+    role: task_run
+    repetition: 1
+    official_meaning: Seventh task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R10:
+    role: task_run
+    repetition: 1
+    official_meaning: Eighth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R11:
+    role: task_run
+    repetition: 2
+    official_meaning: Ninth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R12:
+    role: task_run
+    repetition: 2
+    official_meaning: Tenth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R13:
+    role: task_run
+    repetition: 3
+    official_meaning: Eleventh task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+  R14:
+    role: task_run
+    repetition: 3
+    official_meaning: Twelfth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
+
+event_codes:
+  T0:
+    official_meaning: Rest.
+  T1:
+    official_meaning: Task code whose semantic meaning depends on the run context; in unilateral fist runs it denotes left-fist, while in bilateral hand/foot runs it denotes both-fists.
+  T2:
+    official_meaning: Task code whose semantic meaning depends on the run context; in unilateral fist runs it denotes right-fist, while in bilateral hand/foot runs it denotes both-feet.

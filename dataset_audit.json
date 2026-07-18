@@ -1,0 +1,38 @@
+{
+  "dataset": "EEGMMIDB",
+  "source": "PhysioNet EEG Motor Movement/Imagery Dataset v1.0.0",
+  "generated_at": "2026-07-18",
+  "subject_count": 109,
+  "expected_subjects": 109,
+  "edf_file_count": 1526,
+  "event_sidecar_count": 1526,
+  "zero_byte_files": 0,
+  "unreadable_edf_files": 0,
+  "duplicate_edf_recordings": [],
+  "duplicate_event_sidecars": {
+    "count": 312,
+    "interpretation": "Identical .event sidecar files were found across different subjects; these are not duplicate EEG recordings."
+  },
+  "known_subjects": {
+    "S088": {
+      "issue": "128 Hz sampling-rate anomaly in runs R03-R14",
+      "requires_human_approval": true
+    },
+    "S089": {
+      "issue": "Reported event-annotation issue",
+      "requires_human_approval": true
+    },
+    "S092": {
+      "issue": "128 Hz sampling-rate anomaly in runs R03-R14",
+      "requires_human_approval": true
+    },
+    "S100": {
+      "issue": "128 Hz sampling-rate anomaly in runs R03-R14",
+      "requires_human_approval": true
+    }
+  },
+  "resting_state_assessment": {
+    "status": "valid_proxy",
+    "notes": "The dataset provides baseline EO/EC recordings and they can be used as resting-state EEG proxies, but they are one-minute baseline recordings rather than a separate long-duration resting-state protocol."
+  }
+}

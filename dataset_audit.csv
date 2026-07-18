@@ -1,0 +1,2 @@
+dataset,source,subject_count,edf_file_count,event_sidecar_count,zero_byte_files,unreadable_edf_files,duplicate_edf_recordings,duplicate_event_sidecars,resting_state_assessment
+EEGMMIDB,PhysioNet EEG Motor Movement/Imagery Dataset v1.0.0,109,1526,1526,0,0,0,Present but not duplicate EEG recordings; identical .event sidecars,Valid resting-state proxy with EO/EC baseline limitations
