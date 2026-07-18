@@ -9,13 +9,17 @@ sampling_rate:
   target_hz: 128
   native_hz: 160
 random_seed: 42
-bandpass_filter:
-  enabled: false
-  low_hz: 1.0
-  high_hz: 40.0
-notch_filter:
-  enabled: false
-  frequency_hz: 60.0
+bandpass:
+  enabled: true
+  l_freq: 1.0
+  h_freq: 40.0
+notch:
+  enabled: true
+  frequencies:
+    - 50.0
+    - 60.0
+save_filtered: true
+overwrite: true
 ica:
   enabled: false
   method: placeholder
@@ -26,3 +30,9 @@ epoch:
 quality_control:
   enabled: false
   amplitude_threshold_uv: 100.0
+bad_channels:
+  enabled: true
+  detection_method: variance
+  interpolation_method: spline
+  max_bad_channels: 4
+  random_seed: 42
