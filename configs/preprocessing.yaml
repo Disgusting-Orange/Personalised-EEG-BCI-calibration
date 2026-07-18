@@ -1,0 +1,28 @@
+dataset_root: data/raw/eegmmidb
+output_root: data/processed
+subjects:
+  - S001
+runs:
+  - R01
+  - R02
+sampling_rate:
+  target_hz: 128
+  native_hz: 160
+random_seed: 42
+bandpass_filter:
+  enabled: false
+  low_hz: 1.0
+  high_hz: 40.0
+notch_filter:
+  enabled: false
+  frequency_hz: 60.0
+ica:
+  enabled: false
+  method: placeholder
+epoch:
+  enabled: false
+  duration_seconds: 2.0
+  overlap_seconds: 0.0
+quality_control:
+  enabled: false
+  amplitude_threshold_uv: 100.0
