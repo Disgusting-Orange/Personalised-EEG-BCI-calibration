@@ -21,10 +21,14 @@ outputs/graph_dataset/
 *.tex
 *.pdf
 
+# AI & Agent Reference Files
+AGENTS.md
+.gemini/
+scratch/
+
 # Per-subject stage reports
 reports/stage4_target_quality_s*/
 reports/stage5_resting_state_validation_s*/
-scratch/
 
 # Python
 __pycache__/
