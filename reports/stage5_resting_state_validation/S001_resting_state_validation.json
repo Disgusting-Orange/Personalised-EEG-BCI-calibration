@@ -1,0 +1,400 @@
+{
+  "validator_version": "stage5-resting-state-1.0",
+  "validated_at_utc": "2026-07-19T18:29:08.760541+00:00",
+  "config_thresholds": {
+    "expected_n_channels": 64,
+    "expected_sfreq_hz": 128.0,
+    "sfreq_tolerance_hz": 0.01,
+    "min_recording_duration_seconds": 30.0,
+    "min_usable_epochs": 20,
+    "max_rejection_rate": 0.5,
+    "max_bad_channels": 4
+  },
+  "result": {
+    "subject_id": "S001",
+    "verdict": "PASS",
+    "runs": [
+      {
+        "subject_id": "S001",
+        "run_id": "R01",
+        "condition": "eyes_open",
+        "fif_metadata": {
+          "sfreq": 128.0,
+          "n_channels": 64,
+          "ch_names": [
+            "Fc5.",
+            "Fc3.",
+            "Fc1.",
+            "Fcz.",
+            "Fc2.",
+            "Fc4.",
+            "Fc6.",
+            "C5..",
+            "C3..",
+            "C1..",
+            "Cz..",
+            "C2..",
+            "C4..",
+            "C6..",
+            "Cp5.",
+            "Cp3.",
+            "Cp1.",
+            "Cpz.",
+            "Cp2.",
+            "Cp4.",
+            "Cp6.",
+            "Fp1.",
+            "Fpz.",
+            "Fp2.",
+            "Af7.",
+            "Af3.",
+            "Afz.",
+            "Af4.",
+            "Af8.",
+            "F7..",
+            "F5..",
+            "F3..",
+            "F1..",
+            "Fz..",
+            "F2..",
+            "F4..",
+            "F6..",
+            "F8..",
+            "Ft7.",
+            "Ft8.",
+            "T7..",
+            "T8..",
+            "T9..",
+            "T10.",
+            "Tp7.",
+            "Tp8.",
+            "P7..",
+            "P5..",
+            "P3..",
+            "P1..",
+            "Pz..",
+            "P2..",
+            "P4..",
+            "P6..",
+            "P8..",
+            "Po7.",
+            "Po3.",
+            "Poz.",
+            "Po4.",
+            "Po8.",
+            "O1..",
+            "Oz..",
+            "O2..",
+            "Iz.."
+          ],
+          "n_eeg_channels": 64,
+          "highpass": 1.0,
+          "lowpass": 40.0,
+          "file_path": "outputs\\preprocessed\\filtered\\S001_R01_filtered_raw.fif"
+        },
+        "checks": [
+          {
+            "name": "filtered_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "epochs_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "ica_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "qc_report_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "sfreq_matches_config",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "n_channels_expected",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "eeg_channels_present",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "filter_bandpass_recorded",
+            "passed": true,
+            "severity": "warning",
+            "reason": "highpass=1.0, lowpass=40.0"
+          },
+          {
+            "name": "qc_sfreq_consistent_with_fif",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "usable_epochs_sufficient",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "rejection_rate_acceptable",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "bad_channels_acceptable",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "ica_components_recorded",
+            "passed": true,
+            "severity": "info",
+            "reason": ""
+          },
+          {
+            "name": "epochs_sfreq_matches_config",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          }
+        ]
+      },
+      {
+        "subject_id": "S001",
+        "run_id": "R02",
+        "condition": "eyes_closed",
+        "fif_metadata": {
+          "sfreq": 128.0,
+          "n_channels": 64,
+          "ch_names": [
+            "Fc5.",
+            "Fc3.",
+            "Fc1.",
+            "Fcz.",
+            "Fc2.",
+            "Fc4.",
+            "Fc6.",
+            "C5..",
+            "C3..",
+            "C1..",
+            "Cz..",
+            "C2..",
+            "C4..",
+            "C6..",
+            "Cp5.",
+            "Cp3.",
+            "Cp1.",
+            "Cpz.",
+            "Cp2.",
+            "Cp4.",
+            "Cp6.",
+            "Fp1.",
+            "Fpz.",
+            "Fp2.",
+            "Af7.",
+            "Af3.",
+            "Afz.",
+            "Af4.",
+            "Af8.",
+            "F7..",
+            "F5..",
+            "F3..",
+            "F1..",
+            "Fz..",
+            "F2..",
+            "F4..",
+            "F6..",
+            "F8..",
+            "Ft7.",
+            "Ft8.",
+            "T7..",
+            "T8..",
+            "T9..",
+            "T10.",
+            "Tp7.",
+            "Tp8.",
+            "P7..",
+            "P5..",
+            "P3..",
+            "P1..",
+            "Pz..",
+            "P2..",
+            "P4..",
+            "P6..",
+            "P8..",
+            "Po7.",
+            "Po3.",
+            "Poz.",
+            "Po4.",
+            "Po8.",
+            "O1..",
+            "Oz..",
+            "O2..",
+            "Iz.."
+          ],
+          "n_eeg_channels": 64,
+          "highpass": 1.0,
+          "lowpass": 40.0,
+          "file_path": "outputs\\preprocessed\\filtered\\S001_R02_filtered_raw.fif"
+        },
+        "checks": [
+          {
+            "name": "filtered_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "epochs_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "ica_fif_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "qc_report_exists",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "sfreq_matches_config",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "n_channels_expected",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "eeg_channels_present",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          },
+          {
+            "name": "filter_bandpass_recorded",
+            "passed": true,
+            "severity": "warning",
+            "reason": "highpass=1.0, lowpass=40.0"
+          },
+          {
+            "name": "qc_sfreq_consistent_with_fif",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "usable_epochs_sufficient",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "rejection_rate_acceptable",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "bad_channels_acceptable",
+            "passed": true,
+            "severity": "warning",
+            "reason": ""
+          },
+          {
+            "name": "ica_components_recorded",
+            "passed": true,
+            "severity": "info",
+            "reason": ""
+          },
+          {
+            "name": "epochs_sfreq_matches_config",
+            "passed": true,
+            "severity": "error",
+            "reason": ""
+          }
+        ]
+      }
+    ],
+    "cross_run_comparison": [
+      {
+        "name": "both_conditions_present",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "channel_names_consistent",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "sfreq_consistent_across_runs",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      }
+    ],
+    "known_stage2_issues": {
+      "sampling_rate_qc_field_conflict": {
+        "description": "The QC report sampling_frequency_hz field may not match the actual filtered FIF file's sampling frequency. Per Stage 5 policy, the FIF metadata is treated as authoritative.\n",
+        "affected_runs": [
+          "S001/R01"
+        ],
+        "authoritative_source": "filtered FIF sfreq metadata"
+      },
+      "epoch_rejection_logging_inconsistency": {
+        "description": "The R01 epoch pipeline log reports all 30 epochs dropped, yet the R01 QC report shows n_usable_epochs=30 and the epoch FIF contains 30 epochs. The R02 execution shows 0 epochs dropped with identical n_usable_epochs=30.\n",
+        "affected_runs": [
+          "S001/R01"
+        ],
+        "authoritative_source": "epoch FIF contents (n_epochs)"
+      },
+      "validation_log_gap": {
+        "description": "R02 entries were not appended to the legacy *_validation.log files (filter_validation.log, etc.) because the original R01 entries were written by an external harness using a 'validation' logger that is not part of the frozen src/preprocessing/ code.\n",
+        "affected_runs": [
+          "S001/R02"
+        ],
+        "authoritative_source": "console output from Stage 2 pipeline functions"
+      }
+    },
+    "methodological_evaluation": {
+      "dataset_provision": "The PhysioNet EEGMMIDB provides two 1-minute baseline recordings per subject: R01 (eyes open) and R02 (eyes closed), recorded at 64 channels with 160 Hz native sampling rate. These are the ONLY baseline/rest recordings in the dataset. There is no separate dedicated resting-state recording (e.g., 5 minutes of rest).",
+      "eyes_open_appropriateness": "Eyes-open resting-state EEG is a widely used condition in neuroscientific research. It captures visual-alpha desynchronisation and is suitable for functional connectivity analysis. However, EEGMMIDB's 1-minute R01 recording is short relative to typical resting-state protocols (which often use 3-10 minutes). This limits spectral resolution, particularly in lower-frequency bands (delta, theta).",
+      "eyes_closed_appropriateness": "Eyes-closed resting-state EEG is the classical condition for alpha-band analysis and is standard in connectivity studies. The 1-minute R02 recording has the same duration limitation as R01. Eyes-closed may yield stronger alpha oscillations, which can benefit alpha-band connectivity estimates.",
+      "separate_vs_combined": "EO and EC are physiologically distinct conditions with different spectral profiles (alpha power is typically higher in EC). Combining them would mix two different neural states and could obscure condition-specific connectivity patterns. They should be analysed separately as the primary approach, with combined analysis as a secondary sensitivity test only if scientifically justified.",
+      "limitations": "Several limitations must be reported: (1) Duration: ~1 minute per condition is short for reliable resting-state connectivity estimation. This constrains spectral resolution and frequency-band specificity. (2) Task context: these recordings were collected as baselines within a motor-task experiment, not as dedicated resting-state sessions. The subject's state may differ from a pure resting-state protocol. (3) No pre-task vs post-task distinction: it is unknown whether R01/R02 precede or follow the motor-task runs, so fatigue or task-aftereffects cannot be ruled out. (4) Only one recording per condition per subject provides no test-retest reliability within the dataset. These limitations must be explicitly reported in any publication using these recordings as resting-state input.",
+      "wbs_journal_track_note": "Per the WBS Journal track (task J2.2), EO vs EC must be tested separately as a robustness analysis regardless of which is used as the primary resting-state input. This Stage 5 validation enables that comparison by ensuring both conditions have validated preprocessing outputs."
+    }
+  }
+}

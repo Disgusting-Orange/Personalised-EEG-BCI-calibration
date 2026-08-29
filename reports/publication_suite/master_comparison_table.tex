@@ -1,0 +1,49 @@
+\begin{table*}[t]
+\centering
+\caption{Master LOSO Continuous Regression Performance Comparison Across 109 Subjects}
+\label{tab:loso_master_comparison}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Model Category} & \textbf{Model ID} & \textbf{MAE} & \textbf{RMSE} & \textbf{R$^2$ Score [95\% CI]} & \textbf{Pearson $r$ ($p$-value)} \\
+\hline
+  DUMMY & spectral_concatenated & 0.1282 & 0.1706 & -0.2346 & -1.0000 ($p=0.0$) \\
+  RIDGE & spectral_concatenated & 0.1690 & 0.2287 & -1.2179 & -0.3209 ($p=0.3659167252641328$) \\
+  DUMMY & spectral_concatenated & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  DUMMY & spectral_plus_wpli & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  RIDGE & spectral_concatenated & 0.1287 & 0.1667 & -0.1676 & 0.0412 ($p=0.6705555476910796$) \\
+  RIDGE & spectral_plus_wpli & 0.1261 & 0.1645 & -0.1371 & 0.1030 ($p=0.2867414435492683$) \\
+  LASSO & spectral_concatenated & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  RF & spectral_concatenated & 0.1349 & 0.1827 & -0.4147 & -0.6511 ($p=0.0414457235167616$) \\
+  \textbf{SVR} & spectral_plus_wpli & 0.1181 & 0.1515 & 0.0357 & 0.2242 ($p=0.0190956240619609$) \\
+  DUMMY & spectral_concatenated & 0.1282 & 0.1706 & -0.2346 & -1.0000 ($p=0.0$) \\
+  RIDGE & spectral_concatenated & 0.1690 & 0.2287 & -1.2179 & -0.3209 ($p=0.3659167252641328$) \\
+  DUMMY & spectral_concatenated & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  DUMMY & spectral_plus_wpli & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  RIDGE & spectral_concatenated & 0.1287 & 0.1667 & -0.1676 & 0.0412 ($p=0.6705555476910796$) \\
+  RIDGE & spectral_plus_wpli & 0.1261 & 0.1645 & -0.1371 & 0.1030 ($p=0.2867414435492683$) \\
+  LASSO & spectral_concatenated & 0.1241 & 0.1557 & -0.0186 & -1.0000 ($p=0.0$) \\
+  RF & spectral_concatenated & 0.1349 & 0.1827 & -0.4147 & -0.6511 ($p=0.0414457235167616$) \\
+  \textbf{SVR} & spectral_plus_wpli & 0.1181 & 0.1515 & 0.0357 & 0.2242 ($p=0.0190956240619609$) \\
+  ELASTICNET & spectral_concatenated & 0.1241 & 0.1571 & -0.0372 & -0.0677 ($p=0.4845193080909424$) \\
+  \textbf{SVR} & spectral_concatenated & 0.1182 & 0.1501 & 0.0543 & 0.2547 ($p=0.0075342160670311$) \\
+  RF & spectral_concatenated & 0.1179 & 0.1450 & 0.1172 & 0.3426 ($p=0.0002654957036113$) \\
+  RF & spectral_plus_wpli & 0.1175 & 0.1463 & 0.1005 & 0.3197 ($p=0.0007015213023634$) \\
+  XGBOOST & spectral_concatenated & 0.1194 & 0.1489 & 0.0693 & 0.2918 ($p=0.0020799311473973$) \\
+  XGBOOST & spectral_concatenated & 0.1194 & 0.1489 & 0.0693 & 0.2918 ($p=0.0020799311473973$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1224 & 0.1568 & -0.0328 & 0.2585 ($p=0.0066453$) \\
+  GAT & wpli_alpha_top15 & 0.1230 & 0.1543 & 0.0000 & 0.0000 ($p=1.0$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1224 & 0.1568 & -0.0328 & 0.2585 ($p=0.0066453$) \\
+  GAT & wpli_alpha_top15 & 0.1224 & 0.1538 & 0.0067 & 0.0838 ($p=0.38654$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1357 & 0.1744 & -0.2778 & 0.0014 ($p=0.98821$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1307 & 0.1700 & -0.2143 & -0.0029 ($p=0.97629$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1224 & 0.1568 & -0.0328 & 0.2585 ($p=0.0066453$) \\
+  GRAPHSAGE & wpli_alpha_top20 & 0.1287 & 0.1701 & -0.2152 & 0.0726 ($p=0.45311$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1395 & 0.1756 & -0.2954 & 0.0443 ($p=0.64709$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1230 & 0.1612 & -0.0918 & 0.2911 ($p=0.0021346$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1216 & 0.1556 & -0.0173 & 0.3313 ($p=0.00043364$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1315 & 0.1659 & -0.1564 & 0.1602 ($p=0.0962$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1310 & 0.1615 & -0.0959 & 0.2456 ($p=0.010062$) \\
+  \textbf{GCN} & wpli_alpha_top15 & 0.1138 & 0.1456 & 0.1097 & 0.3313 ($p=0.00043364$) \\
+\hline
+\end{tabular}
+\end{table*}

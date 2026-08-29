@@ -1,0 +1,39 @@
+\begin{table*}[t]
+\centering
+\caption{Comprehensive Scientific Ablation Studies of the Primary GCN Regressor across 109 Subjects under Leave-One-Subject-Out (LOSO) Cross-Validation. Bold entries demarcate the frozen primary baseline configuration.}
+\label{tab:gcn_ablations}
+\small
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{Ablation Dimension} & \textbf{Variant / Component} & \textbf{MAE} & \textbf{RMSE} & \textbf{$R^2$ Score} & \textbf{Pearson $r$} & \textbf{Spearman $\rho$} & \textbf{$\Delta R^2$ vs Base} \\
+\midrule
+  \multirow{1}{*}{\textbf{Topology Density}} & top10 & 0.1326 & 0.1768 & -0.3127 & -0.0257 & 0.0389 & -0.2271 \\
+   & top15 & 0.1294 & 0.1658 & -0.1543 & 0.1254 & 0.1042 & -0.0686 \\
+   & \textbf{top20 (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+   & top25 & 0.1353 & 0.1740 & -0.2712 & -0.0289 & -0.0036 & -0.1856 \\
+   & top30 & 0.1383 & 0.1712 & -0.2311 & 0.0940 & 0.0712 & -0.1454 \\
+\midrule
+  \multirow{1}{*}{\textbf{Connectivity Metric}} & \textbf{wPLI (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+   & PLV & 0.1258 & 0.1670 & -0.1712 & 0.1655 & 0.2396 & -0.0856 \\
+\midrule
+  \multirow{1}{*}{\textbf{Frequency Band}} & Delta & 0.1308 & 0.1661 & -0.1586 & 0.0838 & 0.1232 & -0.0730 \\
+   & Theta & 0.1314 & 0.1687 & -0.1950 & 0.0642 & 0.0073 & -0.1094 \\
+   & \textbf{Alpha (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+   & Beta & 0.1311 & 0.1753 & -0.2903 & 0.0183 & 0.0320 & -0.2047 \\
+   & Gamma & 0.1421 & 0.1812 & -0.3796 & -0.0714 & -0.0851 & -0.2940 \\
+\midrule
+  \multirow{1}{*}{\textbf{Pooling Strategy}} & Mean & 0.1404 & 0.1816 & -0.3857 & -0.0312 & -0.0199 & -0.3001 \\
+   & Max & 0.1294 & 0.1690 & -0.1997 & 0.0634 & 0.1215 & -0.1141 \\
+   & \textbf{Concat (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+\midrule
+  \multirow{1}{*}{\textbf{Loss Function}} & MSE & 0.1297 & 0.1644 & -0.1357 & 0.1688 & 0.1529 & -0.0501 \\
+   & \textbf{SmoothL1 (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+\midrule
+  \multirow{1}{*}{\textbf{Jumping Knowledge}} & Without_JK & 0.1314 & 0.1683 & -0.1895 & 0.1761 & 0.1208 & -0.1039 \\
+   & \textbf{With_JK (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+\midrule
+  \multirow{1}{*}{\textbf{Learning Rate Scheduler}} & Plateau & 0.1311 & 0.1674 & -0.1772 & 0.0977 & 0.0773 & -0.0916 \\
+   & \textbf{Cosine (Primary)} & \textbf{0.1263} & 0.1608 & \textbf{-0.0856} & \textbf{0.2103} & 0.1387 & Ref \\
+\bottomrule
+\end{tabular}
+\end{table*}

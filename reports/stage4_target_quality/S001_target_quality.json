@@ -1,0 +1,174 @@
+{
+  "validator_version": "stage4-target-quality-1.0",
+  "validated_at_utc": "2026-07-19T17:59:51.370393+00:00",
+  "config_thresholds": {
+    "balanced_accuracy_chance_level": 0.5,
+    "above_chance_margin": 0.0,
+    "max_fold_sd": 0.15,
+    "min_total_trials": 30,
+    "max_class_imbalance_ratio": 2.0
+  },
+  "target_directory": "outputs\\targets\\stage3_s001",
+  "result": {
+    "subject_id": "S001",
+    "target_value": 0.6215415019762847,
+    "verdict": "WARNING",
+    "traceability": [
+      {
+        "name": "subject_id_recorded",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "cross_validation_recorded",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "decoder_recorded",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "primary_target_metric_recorded",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "oof_origin_recorded",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "fold_metrics_file_present",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "mi_targets_file_present",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "software_versions_recorded",
+        "passed": true,
+        "severity": "warning",
+        "reason": ""
+      }
+    ],
+    "integrity": [
+      {
+        "name": "target_value_finite",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "trial_count_coherent",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "per_class_counts_positive",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "fold_count_matches_n_splits",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "fold_balanced_accuracy_finite",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "mi_targets_subject_present",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      }
+    ],
+    "schema_compatibility": [
+      {
+        "name": "target_report_top_level_fields",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "cross_validation_fields",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "metrics_fields",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "fold_metrics_columns",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      },
+      {
+        "name": "mi_targets_columns",
+        "passed": true,
+        "severity": "error",
+        "reason": ""
+      }
+    ],
+    "reliability": {
+      "n_folds": 5.0,
+      "mean": 0.63,
+      "sd": 0.24259018941416408,
+      "min": 0.325,
+      "max": 1.0
+    },
+    "flags": [
+      {
+        "name": "above_chance",
+        "passed": true,
+        "value": 0.63,
+        "threshold": ">0.5",
+        "reason": ""
+      },
+      {
+        "name": "fold_sd_acceptable",
+        "passed": false,
+        "value": 0.24259018941416408,
+        "threshold": "<=0.15",
+        "reason": "fold SD 0.2426 exceeds 0.15"
+      },
+      {
+        "name": "sufficient_trials",
+        "passed": true,
+        "value": 45,
+        "threshold": ">=30",
+        "reason": ""
+      },
+      {
+        "name": "class_balance_acceptable",
+        "passed": true,
+        "value": 1.0454545454545454,
+        "threshold": "<=2.0",
+        "reason": ""
+      }
+    ]
+  }
+}
