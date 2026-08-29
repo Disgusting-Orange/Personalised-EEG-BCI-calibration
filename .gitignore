@@ -17,6 +17,10 @@ outputs/graph_dataset/
 *.npz
 *.zip
 
+# Local LaTeX & PDF Reference Files
+*.tex
+*.pdf
+
 # Per-subject stage reports
 reports/stage4_target_quality_s*/
 reports/stage5_resting_state_validation_s*/
