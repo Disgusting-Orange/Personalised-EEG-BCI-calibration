@@ -1,0 +1,8 @@
+stage: 10
+connectivity_metric: wpli
+frequency_band: alpha
+sparsification_density: 0.20
+node_feature_type: full_spectral
+ensure_connected: true
+output_directory: outputs/graph_dataset
+n_jobs: 8

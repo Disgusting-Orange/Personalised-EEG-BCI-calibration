@@ -1,0 +1,80 @@
+stage: 4
+stage_name: target_quality
+
+# Stage 3 output directory to validate. Kept as a path (not a hardcoded
+# subject) so the same validator can run over future multi-subject target
+# directories without code changes.
+target_directory: outputs/targets/stage3_s001
+
+# Output directory for Stage 4 reports.
+output_directory: reports/stage4_target_quality
+
+# Whether to overwrite existing Stage 4 reports for the same target.
+overwrite: true
+
+# ---------------------------------------------------------------------------
+# Schema contract for Stage 3 target outputs.
+# These are the field names the validator EXPECTS to find. They are not
+# expected constant VALUES (e.g. subject_id is not pinned to "S001").
+# Adding a field here does not change Stage 3; it only makes the validator
+# require that field's presence for downstream compatibility.
+# ---------------------------------------------------------------------------
+schema:
+  target_report_required_top_level:
+    - subject_id
+    - primary_target_metric
+    - cross_validation
+    - decoder
+    - metrics
+    - n_trials_per_class
+    - n_trials_total
+    - random_seed
+    - stage
+  cross_validation_required_fields:
+    - strategy
+    - n_splits
+    - shuffle
+    - random_state
+  metrics_required_fields:
+    - balanced_accuracy
+  fold_metrics_required_columns:
+    - subject_id
+    - fold
+    - balanced_accuracy
+    - accuracy
+    - macro_f1
+    - kappa
+    - n_train_trials
+    - n_test_trials
+    - n_train_class_0
+    - n_train_class_1
+    - n_test_class_0
+    - n_test_class_1
+  mi_targets_required_columns:
+    - subject_id
+    - balanced_accuracy
+
+# ---------------------------------------------------------------------------
+# QC thresholds. All values are documented here; none are hardcoded in the
+# validator. Adjust here only — never in source — and document the reason.
+# ---------------------------------------------------------------------------
+thresholds:
+  # Binary left/right fist task: balanced-accuracy chance level is 0.5.
+  # The above-chance flag is a boolean QC check, not a statistical test.
+  balanced_accuracy_chance_level: 0.5
+
+  # Mean balanced accuracy must exceed chance by at least this margin to be
+  # considered above-chance. Keeps the flag robust to floating point noise.
+  above_chance_margin: 0.0
+
+  # Maximum acceptable fold-level standard deviation. Above this, the single
+  # subject-level target is flagged as unstable for downstream regression.
+  max_fold_sd: 0.15
+
+  # Minimum total trial count. Echoes the spirit of AGENTS.md Section 9a's
+  # "minimum 30 clean epochs" rule, applied to MI trials.
+  min_total_trials: 30
+
+  # Acceptable per-class trial ratio (max_class / min_class). 2.0 means the
+  # larger class may be at most twice the smaller.
+  max_class_imbalance_ratio: 2.0

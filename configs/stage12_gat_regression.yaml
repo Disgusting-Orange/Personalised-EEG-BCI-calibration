@@ -1,0 +1,26 @@
+stage: 12
+graph_dataset_dir: outputs/graph_dataset/wpli_alpha_top15
+output_directory: outputs/benchmark/stage12
+ledger_path: reports/benchmark_ledger.csv
+loso_splits_path: outputs/benchmark/loso_splits.json
+
+random_seed: 42
+n_jobs: 8
+
+model:
+  in_channels: 10
+  hidden_channels: 32
+  heads: 4
+  num_layers: 3
+  dropout: 0.2
+  pooling: mean
+
+training:
+  epochs: 150
+  batch_size: 16
+  lr: 0.003
+  weight_decay: 0.0001
+  patience: 25
+  min_lr: 0.00001
+
+bootstrap_iterations: 1000

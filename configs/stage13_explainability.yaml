@@ -1,0 +1,20 @@
+stage: 13
+graph_dataset_dir: outputs/graph_dataset/wpli_alpha_top15
+output_directory: outputs/explainability
+
+n_jobs: 8
+random_seed: 42
+
+models:
+  - gcn
+  - gat
+
+explainer:
+  epochs: 200
+  lr: 0.01
+  node_mask_type: attributes  # Options: attributes, object
+  edge_mask_type: object      # Options: object
+
+top_k_edges: 20
+top_k_nodes: 10
+dpi: 300

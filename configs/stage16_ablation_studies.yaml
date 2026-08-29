@@ -1,0 +1,74 @@
+stage: 16
+output_directory: outputs/ablation_studies
+reports_directory: reports/ablation_studies
+loso_splits_path: outputs/benchmark/loso_splits.json
+
+random_seed: 42
+n_jobs: 8
+device: cpu
+
+# Baseline Frozen Model Defaults (Primary GCN)
+baseline_model:
+  in_channels: 10
+  hidden_channels: 64
+  num_layers: 3
+  dropout: 0.2
+  pooling: concat
+  use_jk: true
+  connectivity_metric: wpli
+  frequency_band: alpha
+  sparsification_density: 0.20
+
+baseline_training:
+  epochs: 150
+  batch_size: 16
+  lr: 0.005
+  weight_decay: 0.0001
+  patience: 25
+  min_lr: 0.00001
+  loss_function: smooth_l1
+  scheduler: cosine
+
+# 7 Scientific Ablation Experiment Definitions
+ablations:
+  topology_density:
+    densities: [0.10, 0.15, 0.20, 0.25, 0.30]
+    names: [top10, top15, top20, top25, top30]
+    baseline: top20
+
+  connectivity_metric:
+    metrics: [wpli, plv]
+    names: [wPLI, PLV]
+    baseline: wPLI
+
+  frequency_band:
+    bands: [delta, theta, alpha, beta, gamma]
+    names: [Delta, Theta, Alpha, Beta, Gamma]
+    baseline: Alpha
+
+  pooling_strategy:
+    poolings: [mean, max, concat]
+    names: [Mean, Max, Concat]
+    baseline: Concat
+
+  loss_function:
+    losses: [mse, smooth_l1]
+    names: [MSE, SmoothL1]
+    baseline: SmoothL1
+
+  jumping_knowledge:
+    jk_options: [false, true]
+    names: [Without_JK, With_JK]
+    baseline: With_JK
+
+  learning_rate_scheduler:
+    schedulers: [plateau, cosine]
+    names: [Plateau, Cosine]
+    baseline: Cosine
+
+plot_settings:
+  dpi: 300
+  style: seaborn-v0_8-whitegrid
+  primary_color: "#1f77b4"
+  accent_color: "#2ca02c"
+  secondary_color: "#d62728"

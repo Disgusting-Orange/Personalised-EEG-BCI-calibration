@@ -1,0 +1,35 @@
+stage: 6
+preprocessed_epochs_dir: outputs/preprocessed/epochs
+output_directory: outputs/features
+report_directory: reports/stage6_spectral_features
+overwrite: true
+
+psd:
+  method: welch
+  fmin: 1.0
+  fmax: 40.0
+  n_fft: 256
+  n_overlap: 128
+  window: hamming
+
+bands:
+  delta: [1.0, 4.0]
+  theta: [4.0, 8.0]
+  alpha: [8.0, 13.0]
+  beta: [13.0, 30.0]
+  gamma: [30.0, 40.0]
+
+normalization:
+  compute_relative: true
+  primary_node_feature: relative
+
+baseline_runs:
+  - run_id: R01
+    condition: eyes_open
+  - run_id: R02
+    condition: eyes_closed
+
+qc_thresholds:
+  expected_n_channels: 64
+  expected_n_bands: 5
+  relative_power_sum_tolerance: 0.05

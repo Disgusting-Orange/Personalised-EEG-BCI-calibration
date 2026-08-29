@@ -4,11 +4,23 @@ data/raw/
 # Preprocessed EEG data
 data/processed/
 data/preprocessed/
+outputs/preprocessed/
+outputs/interim/
+outputs/graph_dataset/
 
-# Large generated data
+# Large generated data & PyG tensors
 *.edf
 *.fif
 *.set
+*.npy
+*.pt
+*.npz
+*.zip
+
+# Per-subject stage reports
+reports/stage4_target_quality_s*/
+reports/stage5_resting_state_validation_s*/
+scratch/
 
 # Python
 __pycache__/

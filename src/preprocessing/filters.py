@@ -21,6 +21,33 @@ from .utils import get_logger
 RawLike = Union[mne.io.BaseRaw, str, os.PathLike[str]]
 
 
+def normalize_eegmmidb_channels_and_set_montage(
+    raw: mne.io.BaseRaw,
+    montage_name: str = "standard_1020",
+    verbose: bool = False,
+) -> mne.io.BaseRaw:
+    """Normalize EEGMMIDB channel names and apply standard montage.
+
+    Strips trailing dots from channel names, maps them to canonical MNE
+    case-standard channel names, and sets the standard montage so that 3D
+    digitization coordinates (raw.info['dig']) are properly populated.
+    """
+    montage = mne.channels.make_standard_montage(montage_name)
+    montage_lower_map = {ch.lower(): ch for ch in montage.ch_names}
+
+    rename_dict = {}
+    for ch in raw.ch_names:
+        clean_name = ch.strip().rstrip(".")
+        if clean_name.lower() in montage_lower_map:
+            rename_dict[ch] = montage_lower_map[clean_name.lower()]
+
+    if rename_dict:
+        raw.rename_channels(rename_dict)
+
+    raw.set_montage(montage, on_missing="warn", verbose=verbose)
+    return raw
+
+
 def load_raw(file_path: RawLike, *, preload: bool = True, verbose: bool = False) -> mne.io.BaseRaw:
     """Load an EDF file into an MNE Raw object.
 
@@ -38,9 +65,13 @@ def load_raw(file_path: RawLike, *, preload: bool = True, verbose: bool = False)
         raw = file_path.copy()
     else:
         raw = mne.io.read_raw_edf(str(file_path), preload=preload, verbose=verbose)
+        if not preload:
+            raw.load_data(verbose=verbose)
+        raw = normalize_eegmmidb_channels_and_set_montage(raw, verbose=verbose)
 
-    if not preload:
-        raw.load_data(verbose=verbose)
+    if raw.info.get("dig") is None:
+        raw = normalize_eegmmidb_channels_and_set_montage(raw, verbose=verbose)
+
     return raw
 
 

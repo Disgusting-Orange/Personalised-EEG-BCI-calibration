@@ -8,6 +8,7 @@ steps.
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -176,4 +177,187 @@ def save_interpolated_raw(
 
     raw.save(output_path, overwrite=overwrite, verbose=False)
     logger.info("Saved interpolated Raw to %s", output_path)
+    return output_path
+
+
+def fit_ica(
+    raw: mne.io.BaseRaw,
+    *,
+    config: Optional[dict[str, Any]] = None,
+    logger: Optional[Any] = None,
+) -> mne.preprocessing.ICA:
+    """Fit an ICA model on a copy of the input Raw object."""
+
+    if logger is None:
+        logger = get_logger("preprocessing.artifacts")
+
+    config = config or {}
+    ica_cfg = config.get("ica", {})
+
+    if not ica_cfg.get("enabled", False):
+        raise ValueError("ICA is disabled in configuration")
+
+    method = ica_cfg.get("method", "fastica")
+    n_components = int(ica_cfg.get("n_components", 15))
+    random_seed = int(ica_cfg.get("random_seed", 42))
+    max_iter = int(ica_cfg.get("max_iter", 1000))
+
+    working_raw = raw.copy().load_data(verbose=False)
+    highpass = working_raw.info.get("highpass")
+    if highpass is None or float(highpass) < 1.0:
+        logger.warning(
+            "ICA is being fit on data that are not high-pass filtered at 1 Hz or above; current highpass=%.3f Hz",
+            float(highpass) if highpass is not None else float("nan"),
+        )
+
+    ica = mne.preprocessing.ICA(
+        n_components=n_components,
+        method=method,
+        random_state=random_seed,
+        max_iter=max_iter,
+        verbose=False,
+    )
+    ica.fit(working_raw, verbose=False)
+    logger.info("Fitted ICA with method=%s n_components=%d", method, n_components)
+    return ica
+
+
+def detect_artifact_components(
+    ica: mne.preprocessing.ICA,
+    raw: mne.io.BaseRaw,
+    *,
+    config: Optional[dict[str, Any]] = None,
+    logger: Optional[Any] = None,
+) -> list[int]:
+    """Detect artifact-related ICA components automatically when possible."""
+
+    if logger is None:
+        logger = get_logger("preprocessing.artifacts")
+
+    config = config or {}
+    ica_cfg = config.get("ica", {})
+    auto_eog = bool(ica_cfg.get("auto_detect_eog", True))
+    auto_ecg = bool(ica_cfg.get("auto_detect_ecg", True))
+
+    candidate_components: list[int] = []
+
+    if auto_eog:
+        try:
+            eog_indices, _, _ = ica.find_bads_eog(raw, ch_name=None, verbose=False)
+            candidate_components.extend(int(idx) for idx in eog_indices)
+        except Exception as exc:  # pragma: no cover - defensive fallback
+            logger.warning("EOG component detection failed: %s", exc)
+
+    if auto_ecg:
+        try:
+            ecg_indices, _, _ = ica.find_bads_ecg(raw, ch_name=None, verbose=False)
+            candidate_components.extend(int(idx) for idx in ecg_indices)
+        except Exception as exc:  # pragma: no cover - defensive fallback
+            logger.warning("ECG component detection failed: %s", exc)
+
+    components = sorted(set(candidate_components))
+    logger.info("Detected artifact components: %s", components)
+    return components
+
+
+def remove_artifact_components(
+    raw: mne.io.BaseRaw,
+    ica: mne.preprocessing.ICA,
+    components: list[int],
+    *,
+    logger: Optional[Any] = None,
+) -> mne.io.BaseRaw:
+    """Apply ICA to remove the specified components from the data."""
+
+    if logger is None:
+        logger = get_logger("preprocessing.artifacts")
+
+    working_raw = raw.copy().load_data(verbose=False)
+    cleaned = ica.apply(working_raw, exclude=components, verbose=False)
+    logger.info("Removed ICA components: %s", components)
+    return cleaned
+
+
+def run_ica_pipeline(
+    raw: mne.io.BaseRaw,
+    *,
+    subject: Optional[str] = None,
+    run: Optional[str] = None,
+    config: Optional[dict[str, Any]] = None,
+    logger: Optional[Any] = None,
+    save_ica_model: bool = False,
+    output_dir: Optional[str | os.PathLike[str]] = None,
+    overwrite: bool = False,
+) -> tuple[mne.io.BaseRaw, Optional[mne.preprocessing.ICA]]:
+    """Run the ICA fitting, artifact detection, and component removal workflow."""
+
+    if logger is None:
+        logger = get_logger("preprocessing.artifacts")
+
+    config = config or {}
+    ica_cfg = config.get("ica", {})
+    start_time = time.perf_counter()
+
+    subject_name = subject or "unknown"
+    run_name = run or "unknown"
+
+    logger.info("Starting ICA pipeline for subject=%s run=%s", subject_name, run_name)
+
+    if not ica_cfg.get("enabled", False):
+        logger.info("ICA disabled; returning original Raw")
+        return raw.copy().load_data(verbose=False), None
+
+    ica = fit_ica(raw, config=config, logger=logger)
+    components = detect_artifact_components(ica, raw, config=config, logger=logger)
+    cleaned = remove_artifact_components(raw, ica, components, logger=logger)
+
+    elapsed = time.perf_counter() - start_time
+    logger.info(
+        "ICA pipeline complete for subject=%s run=%s elapsed=%.3fs components_removed=%s",
+        subject_name,
+        run_name,
+        elapsed,
+        components,
+    )
+
+    if save_ica_model and ica_cfg.get("save_ica_model", False):
+        output_path = save_ica_model_to_disk(
+            ica,
+            subject=subject_name,
+            run=run_name,
+            output_dir=output_dir,
+            overwrite=overwrite,
+            logger=logger,
+        )
+        logger.info("Saved ICA model to %s", output_path)
+
+    return cleaned, ica
+
+
+def save_ica_model_to_disk(
+    ica: mne.preprocessing.ICA,
+    *,
+    subject: Optional[str] = None,
+    run: Optional[str] = None,
+    output_dir: Optional[str | os.PathLike[str]] = None,
+    overwrite: bool = False,
+    logger: Optional[Any] = None,
+) -> Path:
+    """Persist a fitted ICA object to disk using a deterministic file name."""
+
+    if logger is None:
+        logger = get_logger("preprocessing.artifacts")
+
+    base_dir = Path(output_dir) if output_dir is not None else Path("outputs") / "preprocessed" / "ica"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    subject_name = subject or "unknown"
+    run_name = run or "unknown"
+    output_path = base_dir / f"{subject_name}_{run_name}_ica.fif"
+
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"ICA model already exists and overwrite=False: {output_path}")
+
+    ica.save(output_path, overwrite=overwrite)
+    logger.info("Saved ICA object to %s", output_path)
     return output_path

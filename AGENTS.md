@@ -32,7 +32,7 @@ These decisions were made explicitly by the project owner and apply throughout t
 
 1. **GCN vs. GAT primacy — resolved.** GCN is the primary graph model for the core/EMBC pipeline. GAT is a secondary comparison/ablation model scoped to the extended Journal track, consistent with the WBS. GAT may only be promoted to a co-primary model by a later explicit decision — the agent must not do this unilaterally.
 2. **AutoML — resolved.** AutoML is not a mandatory V2 stage or WBS milestone. It is optional exploratory analysis only, and must never delay or replace any WBS-required experiment or milestone.
-3. **Classification-framed WBS Quality Gates — resolved.** Continuous regression is the primary V2 analysis. No classification-framed gate is silently skipped; each maps to an explicit regression equivalent, documented in Section 2a. The final paired regression model-comparison test (in place of McNemar's test) is not hard-coded — it is flagged for statistical review before Stage 17 (statistical testing) begins.
+3. **Classification-framed WBS Quality Gates — resolved.** Continuous regression is the primary V2 analysis. No classification-framed gate is silently skipped; each maps to an explicit regression equivalent, documented in Section 2a. The final paired regression model-comparison test (in place of McNemar's test) is not hard-coded — it is flagged for statistical review before statistical testing begins.
 4. **Known-issue subjects (S088, S089, S092, S100) — resolved as a procedure, not an outcome.** These subjects must be audited, not automatically excluded or modified. See Section 6a for the required procedure.
 5. **WBS preprocessing defaults — resolved as adopted starting parameters.** See Section 9a for the constraints on how they may be adjusted.
 6. **Both tracks and their milestone structure are preserved as-is** — see Section 4a for the three-way distinction between technical completion, quality-gate completion, and supervisor sign-off.
@@ -43,7 +43,7 @@ These decisions were made explicitly by the project owner and apply throughout t
 
 Not conflicts between this file and the WBS — items intentionally deferred rather than decided now:
 
-1. **Final paired statistical test for regression model comparison** (replacing McNemar's test in Section 2a) is not yet chosen. A paired statistical comparison based on appropriate paired out-of-fold predictions or errors will be selected and justified before statistical analysis (before Stage 17). Candidate methods include paired permutation testing or Wilcoxon signed-rank testing where their assumptions are satisfied — neither is assumed in advance.
+1. **Final paired statistical test for regression model comparison** (replacing McNemar's test in Section 2a) is not yet chosen. A paired statistical comparison based on appropriate paired out-of-fold predictions or errors will be selected and justified before statistical analysis. Candidate methods include paired permutation testing or Wilcoxon signed-rank testing where their assumptions are satisfied — neither is assumed in advance.
 2. **Inclusion/exclusion/correction rules for S088, S089, S092, S100** are not yet defined — Section 6a requires the audit stage to *propose* pre-registered rules, which then require explicit human approval before any downstream stage relies on these subjects.
 
 ---
@@ -69,13 +69,7 @@ Raw MI EEG
 → Cross-validated subject-level MI decoding performance
 → Continuous target
 
-Examples of possible continuous targets include:
-
-- Balanced accuracy
-- Decoding accuracy where scientifically appropriate
-- Other justified continuous MI decoding metrics
-
-The exact primary target metric must be selected and documented before generating final targets.
+The primary continuous target is **balanced accuracy** from the cross-validated MI decoder. It is a continuous subject-level score, not a binary class label.
 
 The downstream research problem is:
 
@@ -93,9 +87,9 @@ The WBS's "✅ Quality Gates" sheet is written in classification language and is
 
 | WBS Quality Gate (as written) | Regression-override equivalent to satisfy instead |
 |---|---|
-| "Balanced Accuracy used as primary metric" | MAE, RMSE, and R² are the primary metrics (per Section 14); Pearson/Spearman correlation reported where appropriate |
+| "Balanced Accuracy used as primary metric" | Balanced accuracy is the continuous MI target metric. MAE, RMSE, and R² are the primary metrics for the later subject-level regression models (per Section 14); Pearson/Spearman correlation reported where appropriate |
 | "Good/poor performer threshold defined before model training; class balance reported" | No threshold is defined for the primary pipeline. If a supplementary binary sensitivity analysis is run later (per Section 2 above), the threshold and resulting class balance are reported only in that supplementary section |
-| "McNemar's or Wilcoxon test: GCN vs best ML model" | McNemar's test does not apply to a regression comparison. A paired statistical comparison based on appropriate paired out-of-fold predictions or errors will be selected and justified before statistical analysis. Candidate methods include paired permutation testing or Wilcoxon signed-rank testing where their assumptions are satisfied. Note: with LOSO, a single outer fold holds out one subject, so a fold-level *correlation* is not defined — any paired comparison must operate on per-subject predictions or errors, not per-fold correlations. The specific test is **not hard-coded** — it is flagged for statistical review before Stage 17 (statistical testing) begins, per Section 1b |
+| "McNemar's or Wilcoxon test: GCN vs best ML model" | McNemar's test does not apply to a regression comparison. A paired statistical comparison based on appropriate paired out-of-fold predictions or errors will be selected and justified before statistical analysis. Candidate methods include paired permutation testing or Wilcoxon signed-rank testing where their assumptions are satisfied. Note: with LOSO, a single outer fold holds out one subject, so a fold-level *correlation* is not defined — any paired comparison must operate on per-subject predictions or errors, not per-fold correlations. The specific test is **not hard-coded** — it is flagged for statistical review before Stage 13 (statistical testing) begins, per Section 1b |
 | "All 4 ML baselines (RF, XGBoost, SVM, Ridge) included and reported" | Unchanged — still required, but reported with regression metrics, plus a DummyRegressor/mean-predictor baseline per Section 13 |
 | "Permutation test (n=1000) for every model — p-value confirms above-chance" | Unchanged in spirit — run permutation testing on the regression target per Section 19, not on binary labels |
 | Everything else on the Quality Gates sheet (data/reproducibility, interpretability, writing, ethics rows) | Unchanged — these are not classification-specific and apply as written |
@@ -161,27 +155,23 @@ Work must proceed through explicit stages.
 
 The stages are:
 
-1. Dataset audit
-2. Dataset/run mapping validation
-3. Preprocessing implementation
-4. Preprocessing quality control
-5. MI event/task extraction
-6. MI decoder implementation
-7. Continuous MI target generation
-8. Target quality and reliability analysis
-9. Resting-state preprocessing validation
-10. Resting-state spectral feature extraction
-11. Functional connectivity extraction
-12. Classical regression baselines
-13. XGBoost regression
-14. Graph dataset construction
-15. GCN regression (primary — core/EMBC pipeline)
-16. GAT regression (secondary comparison/ablation — Journal track only, Section 1a)
-17. Statistical testing
-18. Ablation studies
-19. Interpretability
-20. Publication figures
-21. Reproducibility audit
+1. Dataset audit and run-mapping validation — complete and frozen.
+2. Preprocessing and preprocessing QC — complete, reviewed, validated, and frozen.
+3. MI event/task extraction, CSP + LDA decoding, and continuous target generation — current stage; validate on S001 only using stratified 5-fold cross-validation and balanced accuracy.
+4. Target quality and reliability analysis
+5. Resting-state preprocessing validation
+6. Resting-state spectral feature extraction
+7. Functional connectivity extraction
+8. Classical regression baselines
+9. XGBoost regression
+10. Graph dataset construction
+11. GCN regression (primary — core/EMBC pipeline)
+12. GAT regression (secondary comparison/ablation — Journal track only, Section 1a)
+13. Statistical testing
+14. Ablation studies
+15. Interpretability
+16. Publication figures
+17. Reproducibility audit
 
 The agent must stop at the end of the explicitly requested stage.
 
@@ -277,7 +267,7 @@ The following are independently documented in the dataset's own tooling (MOABB) 
 - **Subject 89**: reported incorrect/mislabeled event annotations.
 - **Subjects 88, 92, 100**: reported sampling rate of 128 Hz instead of the dataset-standard 160 Hz, and task/rest timing of 5.125 s / 1.375 s instead of the standard 4 s / 4 s.
 
-Required procedure for S088, S089, S092, S100 (Stage 1, part of Milestone M1):
+Required Stage 1 procedure for S088, S089, S092, S100 (now frozen as part of the audit record):
 
 1. **Verify** each reported issue against both authoritative documentation (official PhysioNet/EEGMMIDB records, the citing literature) and this local copy of the raw data (actual sampling rate, actual event annotations, actual run timing) — do not accept either source alone.
 2. **Document affected runs and consequences** per subject: which specific runs are affected, what the concrete downstream consequence would be if used unmodified (e.g. incompatible sampling rate breaking a shared pipeline, mislabeled events corrupting the MI target for that subject).
@@ -338,7 +328,9 @@ The WBS's Journal track (task J2.2) requires EO vs EC to be tested separately as
 
 ---
 
-## 9. Preprocessing Requirements
+## 9. Preprocessing Requirements and Frozen Stage 2 Modules
+
+Stage 2 is complete, reviewed, validated, and frozen. Its filtering, bad-channel detection, ICA, epoching, and QC modules **must not be modified unless explicitly requested**. One explicit Stage 3 refinement corrected the filter implementation to the existing WBS-configured sequence (notch → band-pass → resample to 128 Hz); this is the canonical frozen behavior. The requirements below remain the scientific and reproducibility standards for interpreting and using their outputs; they do not authorize further changes to the frozen implementation.
 
 Preprocessing must be scientifically justified and reproducible.
 
@@ -403,6 +395,7 @@ Constraints on these defaults, all mandatory:
 - They remain subject to QC and scientific justification per the base "do not blindly reuse" rule in Section 9 — check them against this dataset's actual amplitude distributions.
 - **Any deviation from these defaults must be explicitly documented, and must never be made merely because it improves a downstream result.** A parameter change is justified by preprocessing/data-quality evidence (amplitude distributions, rejection rates, ICA behavior), never by "this made the regression metric better."
 - **Filtering order must be validated explicitly**, not assumed correct because it matches the WBS's stated sequence (notch → bandpass → resample) — confirm this order avoids aliasing and filter-edge artifacts before applying it at scale.
+- **Validated implementation order:** apply the 60 Hz notch before the 1–40 Hz zero-phase FIR band-pass, then resample 160 Hz recordings to 128 Hz with MNE's anti-aliasing resampling. This matches the WBS preprocessing specification; recordings natively at 128 Hz must bypass resampling and remain subject to the separate validation rule below.
 - **Sampling-rate-specific behavior must be validated separately for any recording natively at 128 Hz** — this includes subjects 88, 92, and 100 flagged in Section 6a. Resampling a 160 Hz recording down to 128 Hz is not the same operation as encountering a recording already at 128 Hz (no anti-aliasing resample needed, different filter behavior near Nyquist). Do not apply the same resample step unconditionally to both cases, and do not treat a native-128 Hz recording as "already conformant" without checking filter/epoch behavior at that rate. This validation is independent of, and does not substitute for, the Section 6a inclusion/exclusion decision for those subjects.
 
 ---
@@ -437,26 +430,25 @@ Before training any subject-level prediction model, verify exact alignment betwe
 
 The continuous regression target must originate from a defensible MI task-decoding pipeline.
 
-The initial reference decoder should be:
+The Stage 3 baseline decoder is:
 
 CSP + LDA
 
-unless a scientifically justified alternative is explicitly approved (the WBS allows CSP+LDA or EEGNet — EEGNet requires the same explicit approval as any other alternative before being used for the primary target).
+No alternative decoder may replace CSP + LDA during Stage 3 unless explicitly approved.
 
 The MI decoding pipeline must:
 
 - Use correctly mapped MI runs
 - Use correctly mapped task events
 - Preserve subject identity
+- For the current validation scope, use S001 only with stratified 5-fold cross-validation
 - Use leakage-safe cross-validation
 - Fit CSP only on training folds
 - Fit scaling only on training folds where applicable
 - Fit LDA only on training folds
 - Evaluate on held-out data
 
-The primary subject-level target should represent cross-validated MI decoding performance.
-
-Balanced accuracy should be preferred where class imbalance makes ordinary accuracy misleading.
+The Stage 3 deliverable is one continuous balanced-accuracy score for S001, calculated from held-out predictions across the stratified 5-fold validation. Cohort-wide target generation is out of scope until explicitly requested.
 
 Store at minimum:
 
@@ -801,7 +793,7 @@ Per the WBS (task 1.1), the environment is:
 - MNE-Python (EDF reading, preprocessing, ICA)
 - Braindecode
 
-Pin all dependency versions in `requirements.txt` at the repository root. The WBS's own acceptance criterion for environment setup is `pip install` completing and `import torch_geometric` succeeding — verify this explicitly before Stage 3 (preprocessing) begins, don't assume it from a successful install log alone.
+Pin all dependency versions in `requirements.txt` at the repository root. The WBS's own acceptance criterion for environment setup is `pip install` completing and `import torch_geometric` succeeding — verify this explicitly before graph-model work begins, don't assume it from a successful install log alone.
 
 ---
 
@@ -888,7 +880,7 @@ MI decoding:
 → event mapping validated and leakage-safe evaluation confirmed
 
 Continuous targets:
-→ all included subjects have traceable, reliable target values
+→ for the current Stage 3 validation scope, S001 has one traceable, reliable balanced-accuracy target; at cohort-wide target generation, all included subjects have traceable, reliable target values
 
 Feature extraction:
 → no unexplained NaN/Inf and exact subject alignment
@@ -910,38 +902,10 @@ Publication:
 
 ---
 
-## 26. Current Starting State
+## 26. Current Validated Project State
 
-This V2 repository is intentionally starting fresh.
+- **Stage 1 — Dataset audit and run-mapping validation:** complete and frozen.
+- **Stage 2 — Preprocessing and preprocessing QC:** complete, reviewed, validated, and frozen. Filtering, bad-channel detection, ICA, epoching, and QC are frozen modules and must not be modified unless explicitly requested; the authorized WBS-conformance correction to filtering order and resampling is included in the frozen state.
+- **Stage 3 — MI decoding target generation:** current stage. Its objective is to generate one continuous MI decoding score for S001 using CSP + LDA, stratified 5-fold cross-validation, and balanced accuracy.
 
-At project initialization, assume only:
-
-- Raw EEGMMIDB data are available under `data/raw/eegmmidb/`
-- 109 subject directories appear to be present
-- The WBS exists at `docs/MI_BCI_WBS_.xlsx`
-
-Do NOT assume that previous preprocessing, features, labels, classifiers, or model results are valid or available in V2.
-
-Historical V1 information may be used to understand previously encountered problems, but V2 results must be independently generated and validated.
-
----
-
-## 27. Immediate First Milestone
-
-The first milestone is ONLY:
-
-**Raw Dataset Audit and Methodology Validation**
-
-Before implementing preprocessing:
-
-1. Audit all raw EEGMMIDB files.
-2. Verify subject and run completeness.
-3. Inspect EDF metadata and annotations.
-4. Verify official run/task mappings.
-5. Determine the correct interpretation of EO/EC baseline recordings for this research.
-6. Explicitly verify the Section 6a known-issue subjects (88, 89, 92, 100) against both authoritative documentation and this local copy of the data, document affected runs and consequences per subject, and propose (not apply) pre-registered inclusion/exclusion/correction rules for human approval.
-7. Document dataset limitations.
-8. Produce a dataset audit report.
-9. Stop for human review.
-
-Do not begin preprocessing automatically after completing the audit. This corresponds to WBS task 1.1a/1.1b (EMBC track) — completing it satisfies part, not all, of Milestone M1; the remaining M1 items (environment verification, PLV feasibility pilot) still require separate supervisor sign-off before Phase 2 begins.
+Do not modify code from Stage 1 or Stage 2 while working on Stage 3 unless the request explicitly authorizes it. Do not proceed beyond Stage 3 unless instructed.

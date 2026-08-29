@@ -1,0 +1,14 @@
+stage: 10
+targets_dir: outputs/targets
+features_dir: outputs/features
+connectivity_dir: outputs/connectivity
+output_directory: outputs/graph_dataset
+
+n_jobs: 8
+
+connectivity_metric: wpli  # Options: wpli, plv
+frequency_band: alpha      # Options: alpha, broadband
+sparsification_density: 0.15 # Options: 0.10, 0.15, 0.20, 1.0 (1.0 = fully connected for topology ablation)
+
+node_feature_type: concatenated  # Options: concatenated (10 features), single_eo (5 features), single_ec (5 features)
+ensure_connected: true     # Ensures degree >= 1 for every node by retaining strongest edge per node

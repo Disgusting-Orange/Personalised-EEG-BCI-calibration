@@ -1,0 +1,26 @@
+stage: 3
+subject_id: S001
+dataset_root: data/raw/eegmmidb
+preprocessing_config: configs/preprocessing.yaml
+run_mapping_config: configs/eegmmidb_run_mapping.yaml
+task_definition: imagined_left_right_fist
+output_directory: outputs/targets/stage3_s001
+random_seed: 42
+
+# Runs, run-specific T1/T2 semantics, epoch window, and baseline policy are
+# resolved exclusively from the approved run-mapping configuration above.
+epoch:
+  reject_by_annotation: true
+cross_validation:
+  strategy: StratifiedKFold
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+csp:
+  n_components: 4
+  reg: null
+  log: true
+  norm_trace: false
+lda:
+  solver: lsqr
+  shrinkage: auto

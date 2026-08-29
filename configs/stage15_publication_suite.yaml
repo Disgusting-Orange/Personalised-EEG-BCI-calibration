@@ -1,0 +1,4 @@
+stage: 15
+ledger_path: reports/benchmark_ledger.csv
+output_directory: reports/publication_suite
+dpi: 300

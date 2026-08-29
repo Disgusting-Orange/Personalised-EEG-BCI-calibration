@@ -21,14 +21,29 @@ notch:
 save_filtered: true
 overwrite: true
 ica:
-  enabled: false
-  method: placeholder
+  enabled: true
+  method: fastica
+  n_components: 15
+  random_seed: 42
+  max_iter: 1000
+  reject: null
+  auto_detect_eog: true
+  auto_detect_ecg: true
+  save_ica_model: true
 epoch:
-  enabled: false
+  enabled: true
   duration_seconds: 2.0
   overlap_seconds: 0.0
+  reject_by_annotation: true
+  baseline: null
+  preload: true
+  save_epochs: true
 quality_control:
-  enabled: false
+  enabled: true
+  save_report: true
+  save_plots: true
+  report_format: json
+  output_directory: outputs/preprocessed/qc
   amplitude_threshold_uv: 100.0
 bad_channels:
   enabled: true

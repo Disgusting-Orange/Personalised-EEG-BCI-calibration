@@ -1,0 +1,22 @@
+stage: 14
+ledger_path: reports/benchmark_ledger.csv
+output_directory: outputs/statistical_analysis
+
+random_seed: 42
+bootstrap_iterations: 1000
+permutation_iterations: 1000
+alpha_level: 0.05
+reference_model: gcn
+
+models:
+  - gcn
+  - gat
+  - svr
+  - ridge
+  - elasticnet
+  - lasso
+  - rf
+  - xgboost
+  - dummy
+
+dpi: 300

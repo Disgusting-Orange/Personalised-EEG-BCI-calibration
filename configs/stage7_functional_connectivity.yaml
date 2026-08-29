@@ -1,0 +1,33 @@
+stage: 7
+preprocessed_epochs_dir: outputs/preprocessed/epochs
+output_directory: outputs/connectivity
+report_directory: reports/stage7_connectivity
+overwrite: true
+
+metrics:
+  primary: wpli
+  secondary: plv
+
+bands:
+  delta: [1.0, 4.0]
+  theta: [4.0, 8.0]
+  alpha: [8.0, 13.0]
+  beta: [13.0, 30.0]
+  gamma: [30.0, 40.0]
+
+baseline_runs:
+  - run_id: R01
+    condition: eyes_open
+  - run_id: R02
+    condition: eyes_closed
+
+execution:
+  n_jobs: 8
+  save_heatmaps: true
+  heatmap_dpi: 300
+
+qc_thresholds:
+  expected_n_channels: 64
+  matrix_symmetry_atol: 1e-5
+  bounded_range_min: 0.0
+  bounded_range_max: 1.0

@@ -1,0 +1,92 @@
+stage: 5
+stage_name: resting_state_validation
+
+# Preprocessed artifact directories (Stage 2 frozen outputs — read only).
+preprocessed:
+  filtered_dir: outputs/preprocessed/filtered
+  epochs_dir: outputs/preprocessed/epochs
+  ica_dir: outputs/preprocessed/ica
+  qc_dir: outputs/preprocessed/qc
+
+# Run mapping config (frozen — read only).
+run_mapping_config: configs/eegmmidb_run_mapping.yaml
+
+# Preprocessing config (frozen — read only).
+preprocessing_config: configs/preprocessing.yaml
+
+# Output directory for Stage 5 reports.
+output_directory: reports/stage5_resting_state_validation
+
+# Whether to overwrite existing Stage 5 reports.
+overwrite: true
+
+# ---------------------------------------------------------------------------
+# Subject and baseline runs to validate.
+# Designed to be reusable for multi-subject expansion.
+# ---------------------------------------------------------------------------
+subjects:
+  - S001
+baseline_runs:
+  - run_id: R01
+    condition: eyes_open
+  - run_id: R02
+    condition: eyes_closed
+
+# ---------------------------------------------------------------------------
+# QC thresholds. All values externalised — none hardcoded in the validator.
+# ---------------------------------------------------------------------------
+thresholds:
+  # Expected number of EEG channels (EEGMMIDB standard).
+  expected_n_channels: 64
+
+  # Expected post-resample sampling rate (per preprocessing.yaml target_hz).
+  expected_sfreq_hz: 128.0
+
+  # Tolerance for sampling-rate checks (absolute Hz).
+  sfreq_tolerance_hz: 0.01
+
+  # Minimum recording duration (seconds) for resting-state usability.
+  min_recording_duration_seconds: 30.0
+
+  # Minimum usable epochs (per AGENTS.md Section 9a, echoes "minimum 30 clean
+  # epochs" rule adapted for resting-state).
+  min_usable_epochs: 20
+
+  # Maximum acceptable epoch rejection rate (fraction of generated epochs).
+  max_rejection_rate: 0.5
+
+  # Maximum acceptable bad-channel count.
+  max_bad_channels: 4
+
+# ---------------------------------------------------------------------------
+# Known Stage 2 reporting issues (read-only documentation).
+# These are NOT repaired; they are documented and the authoritative source
+# is used instead.
+# ---------------------------------------------------------------------------
+known_stage2_issues:
+  sampling_rate_qc_field_conflict:
+    description: >
+      The QC report sampling_frequency_hz field may not match the actual
+      filtered FIF file's sampling frequency. Per Stage 5 policy, the FIF
+      metadata is treated as authoritative.
+    affected_runs:
+      - S001/R01
+    authoritative_source: "filtered FIF sfreq metadata"
+  epoch_rejection_logging_inconsistency:
+    description: >
+      The R01 epoch pipeline log reports all 30 epochs dropped, yet the
+      R01 QC report shows n_usable_epochs=30 and the epoch FIF contains
+      30 epochs. The R02 execution shows 0 epochs dropped with identical
+      n_usable_epochs=30.
+    affected_runs:
+      - S001/R01
+    authoritative_source: "epoch FIF contents (n_epochs)"
+  validation_log_gap:
+    description: >
+      R02 entries were not appended to the legacy *_validation.log files
+      (filter_validation.log, etc.) because the original R01 entries were
+      written by an external harness using a 'validation' logger that is
+      not part of the frozen src/preprocessing/ code.
+    affected_runs:
+      - S001/R02
+    authoritative_source: "console output from Stage 2 pipeline functions"

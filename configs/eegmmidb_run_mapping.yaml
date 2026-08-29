@@ -5,6 +5,29 @@ dataset:
     - The official documentation states that the remaining 12 runs are three repetitions of four task conditions involving movement or imagery.
     - The meaning of T1 and T2 depends on run context; they are not universal across all runs.
 
+task_definitions:
+  imagined_left_right_fist:
+    role: motor_imagery
+    description: Imagined opening and closing of the left versus right fist.
+    runs:
+      - R04
+      - R08
+      - R12
+    event_mapping:
+      T1:
+        label: 0
+        class_name: left_fist
+      T2:
+        label: 1
+        class_name: right_fist
+    epoch_window:
+      tmin_seconds: 0.0
+      tmax_seconds: 4.0
+      rationale: The standard EEGMMIDB MI task interval is 4 seconds from the T1/T2 cue onset; this captures the complete instructed imagery period.
+    baseline:
+      value: null
+      rationale: No baseline correction is applied because this task epoch starts at cue onset and the repository has no pre-cue MI baseline policy. The preceding T0 rest interval is not included in the epoch.
+
 run_mapping:
   R01:
     role: baseline
@@ -19,7 +42,8 @@ run_mapping:
     repetition: 1
     official_meaning: First task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R04:
-    role: task_run
+    role: motor_imagery
+    task_definition: imagined_left_right_fist
     repetition: 1
     official_meaning: Second task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R05:
@@ -27,7 +51,7 @@ run_mapping:
     repetition: 2
     official_meaning: Third task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R06:
-    role: task_run
+    role: motor_imagery
     repetition: 2
     official_meaning: Fourth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R07:
@@ -35,7 +59,8 @@ run_mapping:
     repetition: 3
     official_meaning: Fifth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R08:
-    role: task_run
+    role: motor_imagery
+    task_definition: imagined_left_right_fist
     repetition: 3
     official_meaning: Sixth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R09:
@@ -43,7 +68,7 @@ run_mapping:
     repetition: 1
     official_meaning: Seventh task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R10:
-    role: task_run
+    role: motor_imagery
     repetition: 1
     official_meaning: Eighth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R11:
@@ -51,7 +76,8 @@ run_mapping:
     repetition: 2
     official_meaning: Ninth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R12:
-    role: task_run
+    role: motor_imagery
+    task_definition: imagined_left_right_fist
     repetition: 2
     official_meaning: Tenth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R13:
@@ -59,7 +85,7 @@ run_mapping:
     repetition: 3
     official_meaning: Eleventh task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
   R14:
-    role: task_run
+    role: motor_imagery
     repetition: 3
     official_meaning: Twelfth task-block run from the four-condition motor execution/imagery protocol; left/right versus both-fists/both-feet meaning depends on run-context mapping.
 
