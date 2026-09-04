@@ -1,0 +1,32 @@
+# Configuration for Stage 17: Head-to-Head RS-EEG vs MI-EEG Task Benchmark
+
+dataset:
+  raw_dir: "data/raw/eegmmidb"
+  num_subjects: 109
+
+task_groups:
+  left_right_fist:
+    runs: [4, 8, 12]
+    description: "Motor Imagery: Left Fist vs Right Fist"
+  both_fists_feet:
+    runs: [6, 10, 14]
+    description: "Motor Imagery: Both Fists vs Both Feet"
+  combined_mi:
+    runs: [4, 6, 8, 10, 12, 14]
+    description: "Combined Motor Imagery Task Set (~90 trials)"
+
+decoding:
+  tmin: 0.5
+  tmax: 3.5
+  n_csp_components: 4
+  n_splits: 5
+  random_state: 42
+
+benchmarks:
+  target_accuracy: 0.9375 # 75 / 80 trials correct
+  target_correct_count: 75
+  total_trial_reference: 80
+
+output:
+  ledger_csv: "reports/head_to_head_task_benchmark.csv"
+  summary_json: "reports/head_to_head_summary.json"
