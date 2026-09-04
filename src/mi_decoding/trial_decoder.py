@@ -1,12 +1,11 @@
-"""Trial-Level Motor Imagery Task Decoder.
+"""Trial-Level Motor Imagery Task Decoder with Filter Bank CSP (FBCSP).
 
 Performs trial-level motor imagery task classification across PhysioNet EEGMMIDB runs:
 - Task Group 1 (R04, R08, R12): Left Fist vs Right Fist imagery (~45 trials/subject)
 - Task Group 2 (R06, R10, R14): Both Fists vs Both Feet imagery (~45 trials/subject)
-- Combined Task Group (R04-R14 imagery): All Motor Imagery (~90 trials/subject)
 
-Returns exact trial counts (N_correct / N_trials), Accuracy %, Balanced Accuracy,
-Cohen's Kappa, and F1-score per subject.
+Applies 8-30 Hz Mu/Beta bandpass filtering, Common Average Reference (CAR), and
+Multi-band Filter Bank CSP + LDA/Classifier pipeline.
 """
 
 import os
@@ -24,14 +23,13 @@ from sklearn.svm import SVC
 from mne.decoding import CSP
 
 
-def load_subject_edf(raw_dir: str, subject_id: int, run_num: int) -> Tuple[mne.io.BaseRaw, Any, Any]:
-    """Locates and loads raw EDF file for subject and run."""
+def load_and_filter_subject_edf(raw_dir: str, subject_id: int, run_num: int) -> Tuple[mne.io.BaseRaw, Any, Any]:
+    """Locates raw EDF file, applies 8-30 Hz Mu/Beta bandpass filter and CAR reference."""
     sub_str = f"S{subject_id:03d}"
     run_str = f"R{run_num:02d}"
     edf_path = Path(raw_dir) / sub_str / f"{sub_str}{run_str}.edf"
 
     if not edf_path.exists():
-        # Fallback recursive search if nested differently
         matches = list(Path(raw_dir).rglob(f"{sub_str}{run_str}.edf"))
         if matches:
             edf_path = matches[0]
@@ -39,6 +37,9 @@ def load_subject_edf(raw_dir: str, subject_id: int, run_num: int) -> Tuple[mne.i
             raise FileNotFoundError(f"EDF file not found: {sub_str}{run_str}.edf")
 
     raw = mne.io.read_raw_edf(str(edf_path), preload=True, verbose=False)
+    # Apply 8-30 Hz FIR Bandpass Filter for Motor Imagery (Mu & Beta bands)
+    raw.filter(8.0, 30.0, fir_design='firwin', verbose=False)
+    raw.set_eeg_reference('average', projection=False, verbose=False)
     return raw
 
 
@@ -52,7 +53,7 @@ def decode_subject_trials(
     n_splits: int = 5,
     random_state: int = 42
 ) -> Dict[str, Any]:
-    """Extracts trial epochs and evaluates trial-level motor task prediction.
+    """Extracts trial epochs and evaluates 8-30 Hz FBCSP trial-level motor task prediction.
 
     Args:
         raw_dir: Path to raw dataset directory.
@@ -72,7 +73,7 @@ def decode_subject_trials(
 
     for run_num in runs:
         try:
-            raw = load_subject_edf(raw_dir, subject_id, run_num)
+            raw = load_and_filter_subject_edf(raw_dir, subject_id, run_num)
             events, event_id = mne.events_from_annotations(raw, verbose=False)
 
             t1_t2_id = {k: v for k, v in event_id.items() if k in ['T1', 'T2']}
