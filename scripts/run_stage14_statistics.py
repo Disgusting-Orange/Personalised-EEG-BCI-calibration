@@ -140,8 +140,25 @@ def main(argv: list[str] | None = None) -> int:
     plot_predicted_vs_actual_scatter(y_true, preds["gcn"], "gcn", ci_results["gcn"], out_dir / "gcn_scatter_plot.png", dpi=cfg.get("dpi", 300))
 
     # 6. Master Publication LaTeX & CSV Table
-    df_master = pd.merge(df_ci, df_paired, left_on="model", right_on="target_model", how="left")
+    df_ci_copy = df_ci.copy()
+    df_ci_copy["model_key"] = df_ci_copy["model"].str.lower()
+    df_paired_copy = df_paired.copy()
+    df_paired_copy["target_model_key"] = df_paired_copy["target_model"].str.lower()
+    df_master = pd.merge(df_ci_copy, df_paired_copy, left_on="model_key", right_on="target_model_key", how="left").drop(columns=["model_key", "target_model_key"])
     df_master.to_csv(out_dir / "master_statistical_table.csv", index=False)
+
+    # Save to both local Desktop and OneDrive Desktop results_cni
+    import os
+    import shutil
+    for d in [r"C:\Users\Admin\Desktop\results_cni", r"C:\Users\Admin\OneDrive\Desktop\results_cni"]:
+        try:
+            os.makedirs(d, exist_ok=True)
+            for f in ["master_statistical_table.csv", "bland_altman_plot.png", "gcn_scatter_plot.png", "residual_diagnostics.png"]:
+                src_f = out_dir / f
+                if src_f.exists():
+                    shutil.copy(src_f, os.path.join(d, f))
+        except Exception as e:
+            logger.warning("Could not copy to %s: %s", d, e)
 
     # LaTeX Table code
     latex_lines = [

@@ -4,13 +4,7 @@ data/raw/
 # Preprocessed EEG data
 data/processed/
 data/preprocessed/
-outputs/preprocessed/
-outputs/interim/
-outputs/graph_dataset/
-outputs/targets/
-outputs/features/
-outputs/connectivity/
-outputs/checkpoint_runs/
+outputs/
 
 # Large generated data & PyG tensors
 *.edf

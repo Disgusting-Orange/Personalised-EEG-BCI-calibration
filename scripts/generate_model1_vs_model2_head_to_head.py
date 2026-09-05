@@ -51,7 +51,7 @@ def main():
     # Error brackets
     def get_bracket(err):
         if err <= 5.0:
-            return 'High Precision (<= 5% gap)'
+            return 'High Precision (≤ 5% gap)'
         elif err <= 10.0:
             return 'Good (5% - 10% gap)'
         elif err <= 15.0:
@@ -72,8 +72,11 @@ def main():
     desktop2 = r'C:\Users\Admin\OneDrive\Desktop\results_cni'
     os.makedirs(desktop1, exist_ok=True)
     os.makedirs(desktop2, exist_ok=True)
-    excel_name = 'Model1_vs_Model2_Head_to_Head_Comparison.xlsx'
+    shutil.copy(csv_out, os.path.join(desktop1, 'model1_vs_model2_subject_comparison.csv'))
+    if os.path.exists(desktop2):
+        shutil.copy(csv_out, os.path.join(desktop2, 'model1_vs_model2_subject_comparison.csv'))
 
+    excel_name = 'Model1_vs_Model2_Head_to_Head_Comparison.xlsx'
     p_excel1 = os.path.join(desktop1, excel_name)
     p_excel2 = os.path.join(desktop2, excel_name)
 
@@ -87,8 +90,8 @@ def main():
         
         summary_df = pd.DataFrame([
             {'Metric': 'Subjects Evaluated', 'Value': len(df)},
-            {'Metric': 'Mean Model 1 Actual MI Accuracy', 'Value': f"{df['Model_1_Actual_MI_Accuracy_Pct'].mean():.2f}%"},
-            {'Metric': 'Mean Model 2 GCN Predicted Accuracy', 'Value': f"{df['Model_2_GCN_Predicted_MI_Accuracy_Pct'].mean():.2f}%"},
+            {'Metric': 'Mean Measured MI Ground Truth (CSP+LDA)', 'Value': f"{df['Model_1_Actual_MI_Accuracy_Pct'].mean():.2f}%"},
+            {'Metric': 'Mean Resting-State GCN Prediction', 'Value': f"{df['Model_2_GCN_Predicted_MI_Accuracy_Pct'].mean():.2f}%"},
             {'Metric': 'Mean Absolute Gap / Error (MAE)', 'Value': f"{mae_val:.2f}%"},
             {'Metric': 'Pearson Correlation (r)', 'Value': f"{r_val:.4f} (p = {p_val:.4e})"},
             {'Metric': 'Spearman Rank Correlation (rho)', 'Value': f"{rho_val:.4f} (p = {rho_p:.4e})"},
@@ -122,15 +125,15 @@ def main():
     ax1.plot([min_val, max_val], [min_val, max_val], color='#D32F2F', linestyle='--', lw=2, label='Perfect Alignment (y = x)')
     
     # Fill +/- 10% error margin corridor
-    ax1.fill_between([min_val, max_val], [min_val-10, max_val-10], [min_val+10, max_val+10], color='#BBDEFB', alpha=0.35, label='±10% Accuracy Margin')
+    ax1.fill_between([min_val, max_val], [min_val-10, max_val-10], [min_val+10, max_val+10], color='#BBDEFB', alpha=0.35, label='±10% Error Corridor')
 
     # Regression Fit line
     m, b = np.polyfit(x, y, 1)
-    ax1.plot(x, m*x + b, color='#1B5E20', lw=2.5, label=f'GCN Trend (r = {r_val:.3f}, p < 0.001)')
+    ax1.plot(x, m*x + b, color='#1B5E20', lw=2.5, label=f'GCN Fit (r = {r_val:.3f}, p < 0.001)')
 
-    ax1.set_xlabel('Model 1: Actual MI Decoding Accuracy (%)\n[Calculated from Runs R04–R14 via CSP+LDA]', fontsize=11, fontweight='bold')
-    ax1.set_ylabel('Model 2: GCN-Predicted MI Accuracy (%)\n[Predicted from Resting-State R01–R02]', fontsize=11, fontweight='bold')
-    ax1.set_title('A. Model 1 vs. Model 2 Head-to-Head Scatter Plot', fontsize=12, fontweight='bold', pad=10)
+    ax1.set_xlabel('Measured MI Decoding Performance (Ground Truth, %)\n[Calculated from Runs R04–R14 via 5-Fold CSP+LDA]', fontsize=11, fontweight='bold')
+    ax1.set_ylabel('Resting-State GCN Calibration Prediction (%)\n[Predicted from Baseline R01–R02 Alpha wPLI Graph]', fontsize=11, fontweight='bold')
+    ax1.set_title('A. Calibration Prediction vs. Measured MI Decoding Performance', fontsize=12, fontweight='bold', pad=10)
     ax1.set_xlim(25, 95)
     ax1.set_ylim(25, 95)
     ax1.grid(True, linestyle=':', alpha=0.6)
@@ -149,7 +152,7 @@ def main():
     ax2.set_xticks(range(len(tiers)))
     ax2.set_xticklabels(['≤ 5% Error', '5% – 10% Error', '10% – 15% Error', '> 15% Error'], fontsize=10, fontweight='bold')
     ax2.set_ylabel('Number of Subjects (Total = 109)', fontsize=11, fontweight='bold')
-    ax2.set_title('B. GCN Prediction Error Margins Across Cohort', fontsize=12, fontweight='bold', pad=10)
+    ax2.set_title('B. GCN Prediction Absolute Error Margins Across Cohort', fontsize=12, fontweight='bold', pad=10)
     ax2.set_ylim(0, max(counts) + 8)
     ax2.grid(axis='y', linestyle=':', alpha=0.6)
 
@@ -158,12 +161,12 @@ def main():
     indices = np.arange(len(sorted_df))
     width = 0.4
 
-    ax3.bar(indices - width/2, sorted_df['Model_1_Actual_MI_Accuracy_Pct'], width=width, color='#1565C0', label='Model 1 (Actual MI Accuracy %)')
-    ax3.bar(indices + width/2, sorted_df['Model_2_GCN_Predicted_MI_Accuracy_Pct'], width=width, color='#FF8F00', alpha=0.85, label='Model 2 (GCN-Predicted MI Accuracy %)')
+    ax3.bar(indices - width/2, sorted_df['Model_1_Actual_MI_Accuracy_Pct'], width=width, color='#1565C0', label='Measured MI Ground Truth (CSP+LDA)')
+    ax3.bar(indices + width/2, sorted_df['Model_2_GCN_Predicted_MI_Accuracy_Pct'], width=width, color='#FF8F00', alpha=0.85, label='Resting-State GCN Prediction (wPLI)')
 
-    ax3.set_xlabel('109 Subjects (Sorted by Ascending Actual MI Performance)', fontsize=11, fontweight='bold')
-    ax3.set_ylabel('Decoding Performance (%)', fontsize=11, fontweight='bold')
-    ax3.set_title('C. Subject-by-Subject Comparison: Actual MI (Model 1) vs. GCN-Predicted MI (Model 2)', fontsize=12, fontweight='bold', pad=10)
+    ax3.set_xlabel('109 Subjects (Sorted by Ascending Measured MI Performance)', fontsize=11, fontweight='bold')
+    ax3.set_ylabel('Performance (%)', fontsize=11, fontweight='bold')
+    ax3.set_title('C. Subject-Level Alignment: Ground-Truth Decoding vs. Resting-State GCN Prediction', fontsize=12, fontweight='bold', pad=10)
     ax3.set_xlim(-1, len(sorted_df))
     ax3.set_ylim(0, 100)
     ax3.grid(axis='y', linestyle=':', alpha=0.6)

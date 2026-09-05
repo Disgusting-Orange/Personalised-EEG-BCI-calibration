@@ -229,5 +229,14 @@ def main():
     print(f"\nSaved systematic ablation report to {out_csv}")
     print(df.to_string())
 
+    # Save to both local Desktop and OneDrive Desktop results_cni
+    import shutil
+    for d in [r"C:\Users\Admin\Desktop\results_cni", r"C:\Users\Admin\OneDrive\Desktop\results_cni"]:
+        try:
+            os.makedirs(d, exist_ok=True)
+            shutil.copy(out_csv, os.path.join(d, "gcn_architecture_loss_ablation.csv"))
+        except Exception:
+            pass
+
 if __name__ == "__main__":
     main()
