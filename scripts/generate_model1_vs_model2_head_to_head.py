@@ -67,9 +67,10 @@ def main():
     df.to_csv(csv_out, index=False)
     print(f"Saved Head-to-Head Subject Comparison to {csv_out}")
 
-    # 2. Save Excel to Desktop
-    desktop1 = r'C:\Users\Admin\Desktop'
-    desktop2 = r'C:\Users\Admin\OneDrive\Desktop'
+    # 2. Save Excel to Desktop results_cni folder
+    desktop1 = r'C:\Users\Admin\Desktop\results_cni'
+    desktop2 = r'C:\Users\Admin\OneDrive\Desktop\results_cni'
+    os.makedirs(desktop1, exist_ok=True)
     excel_name = 'Model1_vs_Model2_Head_to_Head_Comparison.xlsx'
 
     p_excel1 = os.path.join(desktop1, excel_name)
@@ -172,6 +173,9 @@ def main():
     plt.savefig(fig_out, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Saved Head-to-Head publication figure to {fig_out}")
+
+    dest_fig = os.path.join(desktop1, 'model1_vs_model2_head_to_head.png')
+    shutil.copy(fig_out, dest_fig)
 
 if __name__ == '__main__':
     main()
