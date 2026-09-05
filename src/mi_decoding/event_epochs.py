@@ -9,10 +9,16 @@ import mne
 import numpy as np
 import pandas as pd
 
-from preprocessing.artifacts import run_bad_channel_pipeline, run_ica_pipeline
-from preprocessing.filters import load_raw, run_filter_pipeline
-from preprocessing.qc import run_qc_pipeline
-from preprocessing.utils import get_logger
+try:
+    from src.preprocessing.artifacts import run_bad_channel_pipeline, run_ica_pipeline
+    from src.preprocessing.filters import load_raw, run_filter_pipeline
+    from src.preprocessing.qc import run_qc_pipeline
+    from src.preprocessing.utils import get_logger
+except ModuleNotFoundError:
+    from preprocessing.artifacts import run_bad_channel_pipeline, run_ica_pipeline
+    from preprocessing.filters import load_raw, run_filter_pipeline
+    from preprocessing.qc import run_qc_pipeline
+    from preprocessing.utils import get_logger
 
 
 def preprocess_mi_run(
