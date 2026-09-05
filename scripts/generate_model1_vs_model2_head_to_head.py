@@ -71,6 +71,7 @@ def main():
     desktop1 = r'C:\Users\Admin\Desktop\results_cni'
     desktop2 = r'C:\Users\Admin\OneDrive\Desktop\results_cni'
     os.makedirs(desktop1, exist_ok=True)
+    os.makedirs(desktop2, exist_ok=True)
     excel_name = 'Model1_vs_Model2_Head_to_Head_Comparison.xlsx'
 
     p_excel1 = os.path.join(desktop1, excel_name)
@@ -176,6 +177,8 @@ def main():
 
     dest_fig = os.path.join(desktop1, 'model1_vs_model2_head_to_head.png')
     shutil.copy(fig_out, dest_fig)
+    if os.path.exists(desktop2):
+        shutil.copy(fig_out, os.path.join(desktop2, 'model1_vs_model2_head_to_head.png'))
 
 if __name__ == '__main__':
     main()
