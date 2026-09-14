@@ -50,3 +50,4 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+scratch_last_prompt.txt
