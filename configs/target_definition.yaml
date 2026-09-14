@@ -1,0 +1,63 @@
+target_definition:
+  name: composite_mi_accuracy
+  formula: "0.5 * (Task2_accuracy + Task4_accuracy)"
+  status: LOCKED
+  locked_date: "2026-09-14"
+  selection_evidence: development_cohort_only
+  development_cohort_file: configs/development_cohort_v1.yaml
+  development_cohort_size: 80
+
+tasks:
+  task_2:
+    name: imagined_left_right_fist
+    runs: [R04, R08, R12]
+    classes:
+      0: left_fist
+      1: right_fist
+    trials_per_subject: ~45
+  task_4:
+    name: imagined_both_fists_both_feet
+    runs: [R06, R10, R14]
+    classes:
+      0: both_fists
+      1: both_feet
+    trials_per_subject: ~45
+
+decoder_specification:
+  sampling_rate_hz: 128
+  reference: common_average
+  bandpass_hz: [8.0, 30.0]
+  fir_design: firwin
+  epoch_window_seconds: [0.5, 3.5]
+  baseline_correction: none
+  feature_extractor: CSP
+  csp_components: 4
+  csp_regularization: null
+  classifier: LDA
+  lda_solver: lsqr
+  lda_shrinkage: auto
+  within_subject_cv: StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+development_cohort_empirical_evidence:
+  evaluation_model: RandomForestRegressor(n_estimators=100, max_depth=5, max_features='sqrt', random_state=42)
+  cross_validation: 5_fold_subject_stratified_cv
+  mean_5fold_pearson_r: 0.4372
+  std_5fold_pearson_r: 0.1035
+  mean_5fold_r2: 0.1541
+  std_5fold_r2: 0.1085
+  mean_5fold_mae: 0.1057
+  std_5fold_mae: 0.0134
+  pooled_oof_r: 0.4172
+  pooled_oof_p: 1.18e-04
+  pooled_oof_r2: 0.1721
+  pooled_oof_mae: 0.1057
+  split_half_icc31: 0.6943
+  split_half_spearman_brown: 0.8196
+
+rationale:
+  - The WBS specifies all six MI runs (R04, R06, R08, R10, R12, R14).
+  - Task 2 and Task 4 have different class semantics (unilateral fist vs bilateral hand/foot).
+  - Pooling their trials into one binary decoder was rejected because it conflates heterogeneous task labels.
+  - The Composite preserves both task types without cross-task label conflation.
+  - The original 109-subject comparison is referenced ONLY as historical exploratory/motivating evidence.
+  - The final target-selection decision is based ONLY on the 80-subject development-cohort analysis performed here.
