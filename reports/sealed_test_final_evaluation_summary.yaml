@@ -1,0 +1,53 @@
+evaluation_status: COMPLETED_ONE_SHOT
+evaluation_date: '2026-09-14'
+configuration: configs/final_configuration_v1.yaml
+development_cohort_n: 80
+sealed_test_cohort_n: 29
+model_fit_count: 1
+sealed_prediction_count: 1
+sealed_evaluation_count: 1
+pearson_r: 0.24429316375061152
+pearson_p: 0.20155067119968634
+spearman_rho: 0.21406577327047832
+spearman_p: 0.2648252171529145
+r2: 0.031828467714389186
+mae: 0.13528921046768366
+rmse: 0.1547862573884595
+bootstrap:
+  n_resamples: 10000
+  confidence_level: 0.95
+  pearson_r_ci:
+  - -0.1513904771331426
+  - 0.5554592420300456
+  r2_ci:
+  - -0.42449413324458096
+  - 0.2622035464427345
+  mae_ci:
+  - 0.108027145841024
+  - 0.1631466335691682
+  rmse_ci:
+  - 0.12451486489602805
+  - 0.1828586811766342
+  spearman_rho_ci:
+  - -0.21134624362606455
+  - 0.5632142773255435
+  seed: 42
+permutation:
+  n_permutations: 10000
+  statistic: pearson_r
+  p_value: 0.1954804519548045
+  seed: 42
+  p_value_onesided: 0.0948905109489051
+  null_r_mean: -0.004003537726273142
+  null_r_std: 0.18712390149786037
+  formula: (1 + sum(|r_null| >= |r_obs|)) / (B + 1)
+development_reference:
+  source: reports/feature_comparison_development.csv
+  pooled_oof_r: 0.4394
+  pooled_oof_r2: 0.1895
+  pooled_oof_mae: 0.1018
+rerun_permitted: false
+scientific_policy:
+  post_test_reselection: false
+  interpretation: The sealed-test result is final and must be reported honestly; the
+    development-selection stage must not be reopened based on this result.
