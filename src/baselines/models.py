@@ -19,7 +19,7 @@ DEFAULT_HPO_GRIDS: dict[str, dict[str, list[Any]]] = {
         "regressor__alpha": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
     },
     "lasso": {
-        "regressor__alpha": [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
+        "regressor__alpha": [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 10.0],
     },
     "elasticnet": {
         "regressor__alpha": [0.001, 0.01, 0.1, 1.0, 10.0],

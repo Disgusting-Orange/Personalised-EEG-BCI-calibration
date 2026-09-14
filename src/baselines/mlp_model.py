@@ -14,7 +14,7 @@ from torch import nn
 class MLPRegressor(nn.Module):
     """Simple 3-layer MLP Regressor operating on flattened node features."""
 
-    def __init__(self, in_features: int = 640, hidden_dim: int = 128, dropout: float = 0.2):
+    def __init__(self, in_features: int = 1408, hidden_dim: int = 128, dropout: float = 0.2):
         super().__init__()
         self.fc1 = nn.Linear(in_features, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, 32)

@@ -23,33 +23,26 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
+from baselines.feature_loader import load_dataset
 from baselines.mlp_model import MLPRegressor
 from baselines.stats import compute_bootstrap_cis, compute_regression_metrics
-from graph.dataset import EEGGraphDataset
+from sklearn.preprocessing import StandardScaler
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("mlp_diagnostic")
 
 
-def evaluate_mlp_loso(dataset_dir: Path, out_dir: Path, seed: int = 42, epochs: int = 150, lr: float = 0.005) -> dict:
-    """Evaluate MLPRegressor under LOSO CV on flattened node features."""
+def evaluate_mlp_loso(out_dir: Path, seed: int = 42, epochs: int = 150, lr: float = 0.005) -> dict:
+    """Evaluate MLPRegressor under LOSO CV on identical 1408-D concatenated spectral features."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    ds = EEGGraphDataset(root=dataset_dir)
-    num_subjects = len(ds)
-
-    # Flatten node features for each subject into X_flat matrix of shape (num_subjects, 640)
-    X_list = []
-    y_list = []
-    for i in range(num_subjects):
-        x_node = ds[i].x.cpu().numpy()  # (64, 10)
-        X_list.append(x_node.flatten())  # (640,)
-        y_list.append(float(ds[i].y.item()))
-
-    X_all = np.array(X_list, dtype=np.float32)  # (109, 640)
-    y_actual = np.array(y_list, dtype=np.float32)  # (109,)
+    X_all, y_actual, subject_ids, feature_names = load_dataset(feature_set="spectral_concatenated")
+    X_all = np.array(X_all, dtype=np.float32)  # (109, 1408)
+    y_actual = np.array(y_actual, dtype=np.float32)  # (109,)
+    num_subjects = len(subject_ids)
+    in_features = X_all.shape[1]
     y_pred = np.zeros(num_subjects, dtype=np.float32)
 
-    logger.info("Evaluating MLPRegressor across %d subjects (Flattened Input shape: %s)...", num_subjects, X_all.shape)
+    logger.info("Evaluating MLPRegressor across %d subjects (Input shape: %s)...", num_subjects, X_all.shape)
 
     for i in range(num_subjects):
         torch.manual_seed(seed + i)
@@ -64,6 +57,12 @@ def evaluate_mlp_loso(dataset_dir: Path, out_dir: Path, seed: int = 42, epochs: 
         X_val, y_val = X_tv[:val_size], y_tv[:val_size]
         X_train, y_train = X_tv[val_size:], y_tv[val_size:]
 
+        # Standardize features without data leakage: fit on training fold only
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_val = scaler.transform(X_val)
+        X_test = scaler.transform(X_test)
+
         train_ds = TensorDataset(torch.tensor(X_train), torch.tensor(y_train))
         val_ds = TensorDataset(torch.tensor(X_val), torch.tensor(y_val))
         test_ds = TensorDataset(torch.tensor(X_test), torch.tensor(y_test))
@@ -72,7 +71,7 @@ def evaluate_mlp_loso(dataset_dir: Path, out_dir: Path, seed: int = 42, epochs: 
         val_loader = DataLoader(val_ds, batch_size=16, shuffle=False)
         test_loader = DataLoader(test_ds, batch_size=1, shuffle=False)
 
-        model = MLPRegressor(in_features=640, hidden_dim=128, dropout=0.2)
+        model = MLPRegressor(in_features=in_features, hidden_dim=128, dropout=0.2)
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
         criterion = nn.MSELoss()
 
@@ -115,12 +114,13 @@ def evaluate_mlp_loso(dataset_dir: Path, out_dir: Path, seed: int = 42, epochs: 
     metrics.update(cis)
 
     df_oof = pd.DataFrame({
-        "subject_id": [f"S{i+1:03d}" for i in range(num_subjects)],
+        "subject_id": list(subject_ids),
         "ground_truth": y_actual,
         "predicted": y_pred,
         "residual": y_actual - y_pred,
         "fold": list(range(1, num_subjects + 1)),
     })
+    df_oof.to_csv(out_dir / "mlp_1408d_oof_predictions.csv", index=False)
     df_oof.to_csv(out_dir / "mlp_oof_predictions.csv", index=False)
 
     return {
@@ -132,11 +132,10 @@ def evaluate_mlp_loso(dataset_dir: Path, out_dir: Path, seed: int = 42, epochs: 
 
 
 def main() -> int:
-    dataset_dir = REPOSITORY_ROOT / "outputs/graph_dataset/wpli_alpha_top20"
     out_dir = REPOSITORY_ROOT / "outputs/benchmark/stage11"
     start_time = time.perf_counter()
 
-    res = evaluate_mlp_loso(dataset_dir, out_dir, seed=42)
+    res = evaluate_mlp_loso(out_dir, seed=42)
     elapsed = time.perf_counter() - start_time
 
     m = res["metrics"]

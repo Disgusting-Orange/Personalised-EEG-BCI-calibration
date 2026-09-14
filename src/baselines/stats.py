@@ -57,6 +57,24 @@ def compute_regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[s
     else:
         spearman_r, spearman_p = 0.0, 1.0
 
+    # Degeneracy check: e.g. severe negative R2 or collapse to LOSO training-mean pattern
+    n_samples = len(y_true)
+    is_degenerate = False
+    if r2 < -0.5:
+        is_degenerate = True
+    elif n_samples > 2:
+        loso_mean = (np.sum(y_true) - y_true) / (n_samples - 1)
+        if np.std(y_pred) > 1e-9 and np.std(loso_mean) > 1e-9:
+            corr_with_loso = float(np.corrcoef(y_pred, loso_mean)[0, 1])
+            if corr_with_loso > 0.99 or np.allclose(y_pred, loso_mean, atol=1e-3):
+                is_degenerate = True
+        elif np.allclose(y_pred, loso_mean, atol=1e-3):
+            is_degenerate = True
+
+    if is_degenerate:
+        pearson_r, pearson_p = float("nan"), float("nan")
+        spearman_r, spearman_p = float("nan"), float("nan")
+
     return {
         "mae": mae,
         "rmse": rmse,
@@ -67,6 +85,7 @@ def compute_regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[s
         "spearman_p": spearman_p,
         "median_ae": med_ae,
         "explained_variance": exp_var,
+        "is_degenerate": is_degenerate,
     }
 
 
@@ -119,11 +138,17 @@ def compute_bootstrap_cis(
     alpha_lower = ((1.0 - ci_level) / 2.0) * 100
     alpha_upper = (1.0 - ((1.0 - ci_level) / 2.0)) * 100
 
+    pearson_valid = [p for p in boot_pearson if not np.isnan(p)]
+    if pearson_valid:
+        pearson_ci = (float(np.percentile(pearson_valid, alpha_lower)), float(np.percentile(pearson_valid, alpha_upper)))
+    else:
+        pearson_ci = (float("nan"), float("nan"))
+
     cis = {
         "mae_ci": (float(np.percentile(boot_mae, alpha_lower)), float(np.percentile(boot_mae, alpha_upper))),
         "rmse_ci": (float(np.percentile(boot_rmse, alpha_lower)), float(np.percentile(boot_rmse, alpha_upper))),
         "r2_ci": (float(np.percentile(boot_r2, alpha_lower)), float(np.percentile(boot_r2, alpha_upper))),
-        "pearson_ci": (float(np.percentile(boot_pearson, alpha_lower)), float(np.percentile(boot_pearson, alpha_upper))),
+        "pearson_ci": pearson_ci,
     }
     return cis
 
