@@ -1,0 +1,4 @@
+Methodology,Evaluation,Grouping,Pearson_r,R2,MAE,Notes
+Global Population LOSO (Unclustered),LOSO (109 folds),None (All subjects),0.3823862827001046,0.1449472942997554,0.11496410047321377,Strict leak-free benchmark; valid population generalization
+Caicedo-Style Efficiency Grouping,Within-Tier LOSO,"Tercile Efficiency Clusters (Low, Mid, High)",0.7837913654208211,0.5772321328052054,0.07581089291900042,Clustering subjects by performance before/during regression truncates variance
+Random 5-Fold CV,Random 5-Fold,None,0.20945637032470113,0.032127067211586424,0.12256925067107934,Standard deep learning cross-validation
