@@ -1,0 +1,85 @@
+version: v1
+status: LOCKED
+locked_date: "2026-09-14"
+
+model:
+  name: RandomForestRegressor
+  n_estimators: 100
+  max_depth: 5
+  max_features: sqrt
+  random_state: 42
+
+feature_set:
+  name: Set C
+  description: "10D relative PSD + IAF summary"
+  components:
+    - relative_psd_10d
+    - mean_IAF_EO
+    - mean_IAF_EC
+    - delta_IAF
+  dimensions: 643
+
+target:
+  name: composite_mi_accuracy
+  reference_config: configs/target_definition.yaml
+  formula: "0.5 * (Task2_accuracy + Task4_accuracy)"
+
+selection:
+  cohort: development
+  n_subjects: 80
+  cv: 5-fold subject-stratified
+  train_subjects_per_fold: 64
+  validation_subjects_per_fold: 16
+
+selection_evidence:
+  source: reports/feature_comparison_development.csv
+  pooled_oof:
+    pearson_r: 0.4394
+    pearson_p: 0.0000455
+    r2: 0.1895
+    mae: 0.1018
+    rmse: 0.1279
+  cv_5fold:
+    mean_pearson_r: 0.4803
+    std_pearson_r: 0.0906
+    mean_r2: 0.1769
+    std_r2: 0.0864
+    mean_mae: 0.1018
+    std_mae: 0.0138
+
+architectures_considered_and_rejected:
+  - name: GCN
+    reason: "Underperformed the RF reference under 5-fold CV (mean r = 0.2024, pooled OOF r = 0.2253, R2 = -0.3779). Removing the internal early-stopping carve-out in a controlled retraining experiment (64 training subjects, fixed 100 epochs) did not close the gap (pooled OOF r = 0.1947, R2 = -0.8879)."
+  - name: GAT
+    reason: "Underperformed the RF reference under 5-fold CV with high fold-to-fold instability (mean r = 0.1785 +/- 0.3176, pooled OOF r = 0.2098, R2 = -0.1369). Retraining on all 64 training subjects for fixed 100 epochs did not resolve underperformance (pooled OOF r = 0.1597, R2 = -0.5701)."
+  - name: RGCN
+    reason: "Underperformed the RF reference under 5-fold CV (mean r = 0.1682, pooled OOF r = 0.1475, R2 = -0.4397). While retraining on all 64 subjects improved pooled OOF r to 0.2273, it remained substantially below the RF reference (r = 0.4394, R2 = 0.1895)."
+
+graph_architecture_evidence:
+  architecture_comparison_source: reports/architecture_comparison_development.csv
+  protocol_sensitivity_source: outputs/research/graph_training_protocol_audit/
+  conclusion: "The evaluated graph architectures underperformed the RF reference at this cohort size and did not recover when the internal early-stopping carve-out was removed in a controlled retraining experiment. This supports the conclusion that these parameterized graph architectures were not competitive with the RF pipeline under the present sample-size/training regime. It is NOT evidence against graph structure in general."
+
+freeze_policy:
+  no_model_changes_before_sealed_evaluation: true
+  no_feature_changes_before_sealed_evaluation: true
+  no_architecture_changes_before_sealed_evaluation: true
+  no_target_changes_before_sealed_evaluation: true
+  development_reselection_after_lock: false
+
+next_step:
+  action: single_one_shot_evaluation
+  cohort: sealed_test
+  n_subjects: 29
+
+scientific_policy:
+  if_sealed_test_underperforms:
+    action: report_result_honestly
+    return_to_development_selection: false
+  core_principle: "If the sealed-test evaluation underperforms, the result must be reported honestly. The development-selection stage must not be reopened after observing sealed-test performance in order to search for a more favorable model, feature set, target, or architecture."
+
+provenance:
+  development_cohort_config: configs/development_cohort_v1.yaml
+  sealed_test_cohort_config: configs/sealed_test_cohort_v1.yaml
+  target_definition_config: configs/target_definition.yaml
+  development_cv_config: configs/development_cv_folds_v1.yaml
