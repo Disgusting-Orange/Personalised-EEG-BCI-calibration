@@ -1,0 +1,9 @@
+Model,Band_Low,Band_High,Percent,Count
+Hybrid Ensemble (GCN + RF),0,5.0,29.357798165137616,32
+Hybrid Ensemble (GCN + RF),5,10.0,25.688073394495415,28
+Hybrid Ensemble (GCN + RF),10,15.0,14.678899082568808,16
+Hybrid Ensemble (GCN + RF),15,inf,30.275229357798167,33
+Mean Baseline,0,5.0,22.93577981651376,25
+Mean Baseline,5,10.0,25.688073394495415,28
+Mean Baseline,10,15.0,17.431192660550458,19
+Mean Baseline,15,inf,33.94495412844037,37
