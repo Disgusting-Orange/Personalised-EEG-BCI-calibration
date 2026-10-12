@@ -1,0 +1,8 @@
+{
+  "total_recordings": 218,
+  "mean_retained": 29.977064220183486,
+  "min_retained": 29,
+  "max_retained": 30,
+  "std_retained": 0.14969879699156624,
+  "total_rejected": 0
+}

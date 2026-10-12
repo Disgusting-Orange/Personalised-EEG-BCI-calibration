@@ -1,0 +1,31 @@
+{
+  "ridge": {
+    "median_alpha": 1000.0,
+    "min_alpha": 1000.0,
+    "max_alpha": 1000.0,
+    "value_counts": {
+      "1000.0": 109
+    }
+  },
+  "svr": {
+    "median_C": 0.1,
+    "min_C": 0.1,
+    "max_C": 10.0,
+    "C_counts": {
+      "0.1": 95,
+      "10.0": 8,
+      "1.0": 6
+    },
+    "median_epsilon": 0.1,
+    "min_epsilon": 0.001,
+    "max_epsilon": 0.1,
+    "epsilon_counts": {
+      "0.1": 106,
+      "0.001": 3
+    },
+    "gamma_counts": {
+      "0.001": 106,
+      "scale": 3
+    }
+  }
+}
